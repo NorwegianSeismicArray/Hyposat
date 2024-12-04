@@ -1,0 +1,60 @@
+HYPOSAT Version 6.1a
+
+Event solution by HYPOSAT
+
+Single teleseismic array observation
+
+No initial solution from multiple azimuth observations possible.
+
+Epicenter set from station WRA   with backazimuth 331.5 [deg], delta  50.65 [deg]
+Epicenter lat:   25.254 [deg]
+Epicenter lon:  110.294 [deg]
+
+Source time (set):  836008363.809 [s]
+
+Iterations        :    1
+Number of defining:    3
+Reference model   : ak135_A             
+CRUST 1.0 used for Station corrections
+
+The new source parameters:
+
+Confidence level of given uncertainties:  68.30 %
+
+Source time  : 1996 06 29 00 32 43.523 +/-    0.300 [s]
+        or               836008363.523 +/-    0.300 [s]
+        or       1996-181:00.32.43.523 +/-    0.300 [s]
+
+
+Epicenter lat:                 25.2539 +/-  47.6410 [deg] (no resolution!)
+Epicenter lon:                110.2944 +/-  44.9164 [deg]
+Source depth :                  0.00   [km] Fixed by input
+
+Epicenter error ellipse calculation not possible (too less parameter resolution)
+
+Flinn-Engdahl Region ( 664 ): Southeastern China
+
+Magnitude:  4.8 +/-  0.0 (    1 obs, mb, V-C)
+
+
+ Stat  Delta   Azi   Phase   [used]    Onset time    Res     Baz     Res   Rayp   Res  Used      SNR    Amplitude  Period  MAG    Q Em-Ang ARID
+
+WRA    50.646 150.28 P                00 41 44.700  -0.002 331.50    0.00  7.55   0.00 TAS      97.80         4.50  0.300 4.85 mb e  23.19  abcdef0
+
+Number of usable stations:    1
+
+Residuals of defining data          RMS    MEAN-ERROR      MEAN
+     1 onset time              :    0.002       0.002     -0.002  [s]
+     1 backazimuth value       :    0.000       0.000      0.000  [deg]
+     1 ray parameter           :    0.000       0.000      0.000  [s/deg]
+
+Weighted RMS of onset times (ISC type):    0.002 [s]
+
+Weighted misfit of input data         L1      L2
+     1 onset times             :    0.006    0.006
+     1 backazimuth values      :    0.000    0.000
+     1 ray parameters          :    0.000    0.000
+     3 misfit over all         :    0.002    0.003
+
+T0                         LAT      LON       Z     VPVS   DLAT     DLON      DZ       DT0    DVPVS DEF    RMS
+1996-06-29 00 32 43.523   25.254  110.294    0.00   0.00  47.6410  44.9164  Fixed     0.300   0.00    3    0.002

@@ -1,0 +1,27 @@
+DATA_TYPE BULLETIN
+ 
+Event  606626813 Jan Mayen Island region
+   Date       Time        Err   RMS Latitude Longitude  Smaj  Smin  Az Depth   Err Ndef Nsta Gap  mdist  Mdist Qual   Author      OrigID
+2012/11/03 18:16:41.20   0.36  0.10  71.4320   -9.8660             340   0.0               4 347   0.62   0.67        BER        UBergen
+2012/11/03 18:16:37.52   0.67 0.862  71.4501  -10.6326 10.19 6.002  24  10.0f        11    8 131   0.81   9.65 m i ke ISCJB     05967011
+2012/11/03 18:16:41.20   0.36 0.100  71.4320   -9.8660 352.9 999.9  -1   0.0   277         4 347                      BER       05429761
+2012/11/03 18:16:38.73   1.00 2.264  71.4675  -10.4648 11.89 8.993  36  10.0f        11    8 127   0.78   9.61 m i ke ISC       05590953
+ (#PRIME)
+ (Depth fixed by ISC Analyst)
+ 
+Sta     Dist  EvAz Phase        Time      TRes  Azim AzRes   Slow   SRes Def   SNR       Amp   Per Qual Magnitude    ArrID
+DAG                Pn       18:18:05.1                                   T__                        _i            68058111
+DAG                Sn       18:19:06.5                                   T__                        _e            68058112
+JMI                Pb       18:16:53.953                                 T__                       __e            96932132  UBergen
+JMIC               Pb       18:16:53.953                                 T__                       __e            96932133  UBergen
+JMIC               Sb       18:17:03.273                                 T__                        _e            96932134  UBergen
+JNE                Pb       18:16:54.641                                 T__                       __e            96932136  UBergen
+JNW                Pb       18:16:53.883                                 T__                       __e            96932138  UBergen
+KBS                Pn       18:18:55.12                                  T__                        _e            96932128
+KBS                S        18:19:15.07                                  ___                        _e            96932129
+SCO                Pn       18:17:39.6                                   T__                        _i            68058610
+SCO                Sn       18:18:22.2                                   T__                        _i            68058611
+SPITS              Pn       18:18:59.672       224.5        14.26        T__                        _e            96932131 FKX_auto
+
+
+STOP

@@ -1,0 +1,19 @@
+DATA_TYPE BULLETIN
+ 
+Event  606594741 Jan Mayen Island region
+   Date       Time        Err   RMS Latitude Longitude  Smaj  Smin  Az Depth   Err Ndef Nsta Gap  mdist  Mdist Qual   Author      OrigID
+2012/10/16 07:52:45.29   0.80  0.30  71.4300   -8.1410 888.2  83.8  46   2.7               4 346   0.41   0.54        BER       NNSN_BUL
+2012/10/16 07:52:45.30   0.80 0.300  71.4310   -8.1420 649.9 610.0  -1   2.7   387         4 346                      BER       05420364
+ (Event not reviewed by the ISC)
+ 
+Sta     Dist  EvAz Phase        Time      TRes  Azim AzRes   Slow   SRes Def   SNR       Amp   Per Qual Magnitude    ArrID
+JMI                S        07:53:03.279                                 T__                        _e            96755022 NNSN_BUL
+JMI                P        07:52:54.810                                 T__                        _e            96755021 NNSN_BUL
+JMIC               P        07:52:54.859                                 T__                        di            96755024 NNSN_BUL
+JMIC               S        07:53:01.100                                 T__                        _e            96755025 NNSN_BUL
+JNE                P        07:52:54.000                                 T__                        _e            96755027 NNSN_BUL
+JNW                S        07:53:00.340                                 T__                        _e            96755030 NNSN_BUL
+JNW                P        07:52:53.070                                 T__                        _i            96755029 96755028 NNSN_BUL
+
+
+STOP

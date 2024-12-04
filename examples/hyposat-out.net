@@ -1,0 +1,91 @@
+HYPOSAT Version 6.1a
+
+Event solution by HYPOSAT
+
+Scandinavia 1994-107:12.00.0
+
+
+Parameters of initial solution (+/- 1 standard deviation):
+
+Mean epicenter calculated from    22 backazimuth observation pairs
+Mean epicenter lat:   66.954 +/-     0.994 [deg]
+Mean epicenter lon:   21.750 +/-     0.206 [deg]
+
+Source time (set):  766584007.760 [s]
+
+Iterations        :    3
+Number of defining:   24
+Reference models  : CRUST 1.0 and iasp91_A            
+CRUST 1.0 used for Station corrections
+
+The new source parameters:
+
+Confidence level of given uncertainties:  95.00 %
+
+Source time  : 1994 04 17 12 00  5.234 +/-    3.725 [s]
+        or               766584005.234 +/-    3.725 [s]
+        or       1994-107:12.00.05.234 +/-    3.725 [s]
+
+
+Epicenter lat:                 67.1654 +/-   0.1563 [deg]
+Epicenter lon:                 21.5747 +/-   0.4589 [deg]
+Source depth :                  0.00   [km] Fixed by HYPOSAT
+
+Source time corrected for mean travel-time residual (   0.946)
+
+Source time  : 1994 04 17 12 00  6.180 +/-    3.725 [s]
+        or               766584006.180 +/-    3.725 [s]
+        or       1994-107:12.00.06.180 +/-    3.725 [s]
+
+
+Epicenter error ellipse:
+Major half axis:    45.29 [km]  Minor half axis:    41.78 [km]
+Azimuth:      156.2  [deg] Area:        5945.36 [km**2]
+
+Flinn-Engdahl Region ( 536 ): CENTRAL NORBOTTEN SWEDEN
+
+ Stat  Delta   Azi   Phase   [used]    Onset time    Res     Baz     Res   Rayp   Res  Used      SNR    Amplitude  Period  MAG    Q Em-Ang ARID
+
+ARCES   2.791  29.68 Pb               12 00 55.800  -0.343 212.40   -0.93 14.30  -2.75 TA D     97.80         4.50  0.300         e  62.79 abcdef01
+ARCES   2.791  29.68 Sn               12 01 27.900  -0.038 211.80   -1.53 19.50  -5.23 TA D                                       e  48.36         
+ARCES   2.791  29.68 Sg               12 01 39.500   1.036 207.10   -6.23 28.50  -4.58 TA D                                       e  88.60         
+APA0    4.432  79.03 Pn      Pb       12 01 21.100  -3.086 276.10    6.54 12.80  -4.24 TASD                                       e  62.75         
+APA0    4.432  79.03 S1      Sn       12 02 13.400   5.527 264.90   -4.66 20.60  -4.11 TA D                                       e  48.31         
+APA0    4.432  79.03 Lg      Sb       12 02 20.100  -2.373 249.40  -20.16 27.10  -2.44 T  D                                       e                
+FINES   6.068 159.09 Pn               12 01 39.200   1.659 344.60    1.45 15.00   1.26 TAS                                        e  45.77         
+NORES   7.810 219.05 Pn               12 01 57.800  -2.383  28.60   -1.43 13.40  -0.32 TAS                                        e  45.71         
+
+Defining travel-time differences:
+
+ Stat  Delta  Phases           Observed   Res
+
+ARCES   2.791 Sn - Pb            32.100   0.304
+ARCES   2.791 Sg - Pb            43.700   1.379
+ARCES   2.791 Sg - Sn            11.600   1.075
+APA0    4.432 Sn - Pn            52.300   8.613
+APA0    4.432 Lg - Pn            59.000   0.713
+APA0    4.432 Lg - Sn             6.700  -7.900
+
+Number of usable stations:    4
+
+Maximum azimuthal gap of defining observations: 219.0 ->  29.7 [deg] = 170.6 [deg]
+
+Maximum secondary azimuthal gap of defining observations: 159.1 ->  29.7 [deg] = 230.6 [deg]
+
+Residuals of defining data          RMS    MEAN-ERROR      MEAN
+     8 onset times             :    2.630       2.056      0.000  [s]
+     7 backazimuth values      :    3.976       3.253     -0.970  [deg]
+     3 ray parameters          :    2.563       1.944     -1.101  [s/deg]
+     6 travel-time differences :    4.835       3.331      0.697  [s]
+
+Weighted RMS of onset times (ISC type):    2.674 [s]
+
+Weighted misfit of input data         L1      L2
+     8 onset times             :    4.683    6.019
+     8 backazimuth values      :    0.268    0.402
+     8 ray parameters          :    2.096    2.374
+     6 travel-time differences :    5.262    7.667
+    30 misfit over all         :    2.932    4.792
+
+T0                         LAT      LON       Z     VPVS   DLAT     DLON      DZ       DT0    DVPVS DEF    RMS
+1994-04-17 12 00 06.180   67.165   21.575    0.00   0.00   0.1563   0.4589  Fixed     3.725   0.00   24    2.630

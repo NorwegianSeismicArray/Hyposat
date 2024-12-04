@@ -1,0 +1,95 @@
+*
+*  hyposat-parameter.barent
+*
+  hyposat-parameter
+
+GLOBAL MODEL                       : ak135_A
+
+LOCAL OR REGIONAL MODEL            : /bull/auto/dpep/ALERT/data/barents.dat
+PHASE INDEX FOR LOCAL MODEL        : 3130
+CRUST 1.0                          : 0
+
+OUTPUT OF REGIONAL MODEL (DEF 0)   : 0
+
+STATION FILE                       : /bull/auto/dpep/ALERT/data/stations
+STATION CORRECTION FILE            : /bull/auto/dpep/ALERT/data/stations.cor
+
+P-VELOCITY TO CORRECT ELEVATION    : 5.2 
+S-VELOCITY TO CORRECT ELEVATION    : 0.
+
+RG GROUP-VELOCITY (DEF 2.5  [km/s]): 1.8
+LG GROUP-VELOCITY (DEF 3.5  [km/s]): 3.5752 
+
+LQ GROUP-VELOCITY (DEF 4.4  [km/s]): 4.4
+LR GROUP-VELOCITY (DEF 3.95 [km/s]): 2.85
+
+STARTING SOURCE TIME (EPOCHAL TIME): 0.
+STARTING TIME ERROR       [s]      : 0. 
+
+STARTING SOURCE DEPTH     [km]     : 0. 
+STARTING DEPTH ERROR      [km]     : 0. 
+DEPTH FLAG (f,b,d,F,B,D)           : f 
+
+STARTING SOURCE LATITUDE  [deg]    : 75.
+STARTING LATITUDE ERROR   [deg]    : 10.  
+
+STARTING SOURCE LONGITUDE [deg]    : 25.
+STARTING LONGITUDE ERROR  [deg]    : 10. 
+
+AUTOMATIC PROCESSING REGIONAL      : 1
+
+MAXIMUM # OF ITERATIONS            : 10
+
+LOCATION ACCURACY [km] (DEFAULT 1) : 1.0
+CONFIDENCE LEVEL  (68.3 - 99.99 %) : 95.
+EPICENTER ERROR ELLIPSE (DEF 1)    : 1
+
+MAXIMUM AZIMUTH ERROR     [deg]    : 30. 
+MAXIMUM SLOWNESS ERROR    [s/deg]  : 5.
+
+SLOWNESS [S/DEG] ( 0 = APP. VEL)   : 1 
+
+FLAG USING TRAVEL-TIME DIFFERENCES : 1
+
+MAGNITUDE CALCULATION (DEF 0)      : 1
+P-ATTENUATION MODEL (G-R or V-C)   : V-C
+MS-ATTENUATION MODEL (R-P / IASPEI): R-P
+ML-ATTENUATION MODEL               : Bath
+ML-CORRECTION FILE                 : MLCORR.TABLE
+*                   Bath - MLCORR.TABLE
+*                Richter - MLCORR.TABLE.wa
+
+
+INPUT FILE NAME (DEF hyposat-in)   : _
+
+OUTPUT FILE NAME (DEF hyposat-out) : _
+OUTPUT SWITCH  (YES = 1, DEFAULT)  : 1
+OUTPUT LEVEL                       : 4 
+
+# TO SEARCH OSCILLATIONS (DEF 4)   : 8
+
+INCLUDING MODEL UNCERTAINTY (DEF 0): 1
+MEAN P-WAVE MODEL UNCERTAINTY      : 0.75
+MEAN S-WAVE MODEL UNCERTAINTY      : 1.50 
+CONSTRAIN SOLUTION (0/1)           : 4
+MAXIMUM ALLOWED P RESIDUUM (def 30): 5.
+MAXIMUM ALLOWED S RESIDUUM (def 30): 10.
+
+DOUBLE SIDED TIME ERROR (0/1/2)    : 0
+DBLE SID. ERROR FACTOR             : 0.5
+*
+HYPOSAT-IN OLD SYNTAX        (0/1) : 1
+*
+
+OUTPUT FORMAT ISF                  : 1
+
+AUTHOR OF SOLUTION                 : NEWS
+*
+DEPTH FLAG (f,b,d,i,j,F,B,D,I,J)   : i
+
+DEFAULT DEPTH TYPE                 : 1
+CRUST 1.0 DEPTH TYPE               : uc
+
+CHECK DEPTH FOR WATER LAYER  (0/1) : 1
+
+WATER LAYER ON TOP         (DEF 0) : 0

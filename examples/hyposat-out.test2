@@ -1,0 +1,138 @@
+HYPOSAT Version 6.1a
+
+Event solution by NORDC
+
+ISF EVENT ID: 113114    
+
+
+Parameters of initial solution (+/- 1 standard deviation):
+
+Mean epicenter calculated from    88 backazimuth observation pairs
+Mean epicenter lat:   68.094 +/-    28.118 [deg]
+Mean epicenter lon:  -28.568 +/-     9.964 [deg]
+
+Initial Epicenter set by input file
+Epicenter lat:   85.572 [deg]
+Epicenter lon:   -5.754 [deg]
+
+
+Source time (from input):  794780748.010 +/-  10.000 [s]
+
+
+Iterations        :   25
+Number of defining:   63
+Reference model   : prem_A              
+CRUST 1.0 used for Reflection Point corrections
+
+The new source parameters:
+
+Confidence level of given uncertainties:  95.00 %
+
+Source time  : 1995 03 09 20 25 47.289 +/-    1.183 [s]
+        or               794780747.289 +/-    1.183 [s]
+        or       1995-068:20.25.47.289 +/-    1.183 [s]
+
+
+Epicenter lat:                 85.8023 +/-   0.1228 [deg]
+Epicenter lon:                 -4.0835 +/-   1.1767 [deg]
+Source depth :                  3.98   [km] Depth fixed at 1/2 of CRUST 1.0 Moho depth
+
+Source time corrected for mean travel-time residual (   0.076)
+
+Source time  : 1995 03 09 20 25 47.365 +/-    1.183 [s]
+        or               794780747.365 +/-    1.183 [s]
+        or       1995-068:20.25.47.365 +/-    1.183 [s]
+
+
+Epicenter error ellipse:
+Major half axis:    17.12 [km]  Minor half axis:    11.03 [km]
+Azimuth:      123.2  [deg] Area:         593.15 [km**2]
+
+Flinn-Engdahl Region ( 641 ): North of Svalbard
+
+ Stat  Delta   Azi   Phase   [used]    Onset time    Res     Baz     Res   Rayp   Res  Used      SNR    Amplitude  Period  MAG    Q        ARID
+
+SPITS   8.074 149.14 P1      Pn       20 27 42.797   0.703 109.70  120.26              T        10.20                             _        3794990 
+DAG     9.289 201.21 P1      Pn       20 27 58.000  -0.559                             T  D                                       i        3794991 
+DAG     9.289 201.21 pP      pwPn     20 28  4.500   1.516                             T  DR                                      i        3794992 
+RES    16.025 285.72 P1      Pn       20 29 29.500  -0.732                             T                                          e        3794993 
+MBC    16.103 308.71 P1      Pn       20 29 32.398   1.114  10.80   -3.10  7.80  -5.82 TA       11.20                             _        3794994 
+ARCES  17.039 143.65 P1      P        20 29 44.797   1.094 357.10    4.23  7.70  -4.64 TA       12.90                             _        3794995 
+UME    22.549 151.55 P1      P        20 30 45.898  -1.221                             T                                          _        3794996 
+INK    24.716 316.63 P1      P        20 31 10.500   1.730                             T                                          e        3794998 
+FRB    24.858 252.67 P1      P        20 31  7.703  -1.894  11.50    2.40  9.20   0.07 TAS       5.80                             _        15788776
+FRB    24.858 252.67 P1      P        20 31  8.000  -1.597                             T                                          e        3794997 
+NOA    25.070 162.36 P1      P        20 31 10.398  -1.292                             T                                          _        3794999 
+FINES  25.147 145.38 P1      P        20 31 12.297   0.023   0.20    5.20 10.00   0.88 TAS       8.60                             _        3795000 
+NORES  25.383 162.02 P1      P        20 31 13.203  -1.254 341.40  -15.95 10.20   1.09 T        10.10                             _        3795001 
+HFS    26.038 159.63 P1      P        20 31 19.297  -1.113                             T                                          _        3795002 
+YKA    29.393 297.63 P1      P        20 31 51.203   0.838                             T                                          _        3795003 
+YKA    29.393 297.63 P1      P        20 31 51.500   1.135   7.50   -0.58  8.50  -0.35 TAS      15.80                             _        15788777
+FCC    31.664 276.88 P1      P        20 32  9.500  -0.843  24.80   16.73 13.80   5.03 T         6.70                             _        3795004 
+OBN    31.965 135.01 P1      P        20 32 13.000  -0.028                             T                                          i        3795005 
+OBN    31.965 135.01 pP      pwP      20 32 21.000   2.961                             T   R                                      e        3795006 
+WHY    32.410 315.92 P1      P        20 32 18.102   1.010                             T                                          _        3795007 
+SCHQ   33.598 248.36 P1      P        20 32 26.000  -1.328 196.80 -170.00 18.00   9.32 T         8.70                             _        3795008 
+CLL    34.860 161.18 P1      P        20 32 37.898  -0.309                             T                                          i        12765373
+BRG    35.317 160.17 P1      P        20 32 42.398   0.242                             T                                          e        3795010 
+MOX    35.490 162.74 P1      P        20 32 44.000   0.330                             T                                          i        12574683
+PRU    36.218 159.58 P1      P        20 32 50.000   0.132                             T                                          e        3795012 
+GRF    36.436 163.22 P1      P        20 32 51.898   0.127                             T                                          e        3795013 
+KHC    37.051 160.69 P1      P        20 32 57.500   0.461                             T  D                                       e        3795014 
+KHC    37.051 160.69 pP      pwP      20 33  5.000   2.962                             T  DR                                      e        3795015 
+GEC2   37.340 160.57 P1      P        20 32 59.500  -0.073   8.00   10.13  7.70  -0.77 T S      17.60                             _        3795016 
+GEC2   37.340 160.57 P1      P        20 32 59.898   0.325                             T                                          _        3795017 
+GEC2   37.340 160.57 x       pwP      20 33 10.300   5.727                                 R                                      _        3795018 
+CDF    37.643 167.59 P1      P        20 33  1.398  -0.728                             T                                          e        3795019 
+LOR    38.742 171.35 P1      P        20 33 10.203  -1.061                             T                                          e        3795020 
+SSF    38.945 171.74 P1      P        20 33 12.000  -0.933                             T                                          e        3795021 
+LBF    39.027 171.23 P1      P        20 33 11.898  -1.791                             T                                          e        3795022 
+AVF    39.214 171.91 P1      P        20 33 14.203  -0.956                             T                                          e        3795023 
+SMF    39.365 171.39 P1      P        20 33 15.398  -1.062                             T                                          e        3795024 
+TCF    39.706 173.17 P1      P        20 33 18.102  -1.224                             T                                          e        3795025 
+ULM    40.257 276.80 P1      P        20 33 24.000   0.215                             T                                          e        3795026 
+ULM    40.257 276.80 P1      P        20 33 24.203   0.418 353.30  -13.24  6.90  -1.38 T         6.50                             _        15788778
+LPL    40.531 168.29 P1      P        20 33 26.297  -0.150                             T                                          e        3795027 
+LPG    40.550 168.27 P1      P        20 33 26.703   0.003                             T                                          e        3795028 
+RJF    40.684 173.94 P1      P        20 33 26.602  -0.789                             T                                          e        3795029 
+LFF    41.043 174.78 P1      P        20 33 29.500  -0.811                             T                                          e        3795030 
+LMQ    41.089 250.63 P1      P        20 33 30.000  -0.696                             T                                          e        3795031 
+SBF    42.195 167.58 P1      P        20 33 39.602  -0.261                             T                                          e        3795032 
+WALA   42.718 294.19 P1      P        20 33 45.703   1.553                             T         6.80                             _        3795033 
+PDAR   48.682 289.10 P1      P        20 34 32.797   1.376  35.10   29.67  5.10  -2.58 T        13.80                             _        3795034 
+TXAR   61.617 281.87 P1      P        20 36  4.703   0.179  11.30    6.56  4.10  -2.64 TA       14.70                             _        3795035 
+CMAR   72.658  75.65 P1      P        20 37 15.898   1.487 349.00   -6.69  7.60   1.67 TA        8.90                             _        3795036 
+GBA    75.898  97.45 P1      P        20 37 34.102   0.770                             T                                          _        3795037 
+
+Defining travel-time differences:
+
+ Stat  Delta  Phases           Observed   Res
+
+DAG     9.289 pwPn - Pn           6.500   2.074
+KHC    37.051 pwP - P             7.500   2.501
+
+Number of usable stations:   43
+
+Maximum azimuthal gap of defining observations: 316.6 ->  75.7 [deg] = 119.0 [deg]
+
+Maximum secondary azimuthal gap of defining observations: 316.6 ->  97.5 [deg] = 140.8 [deg]
+
+Residuals of defining data          RMS    MEAN-ERROR      MEAN
+    50 onset times             :    1.125       0.908      0.000  [s]
+     7 backazimuth values      :    4.605       4.109      1.146  [deg]
+     4 ray parameters          :    0.610       0.516     -0.042  [s/deg]
+     2 travel-time differences :    2.297       2.287      2.287  [s]
+
+Weighted RMS of onset times (ISC type):    1.142 [s]
+
+Weighted misfit of input data         L1      L2
+    51 onset times             :    1.468    2.741
+    14 backazimuth values      :    2.891    5.682
+    13 ray parameters          :    2.787    3.809
+     2 travel-time differences :    9.180   11.799
+    80 misfit over all         :    2.124    4.035
+
+T0                         LAT      LON       Z     VPVS   DLAT     DLON      DZ       DT0    DVPVS DEF    RMS
+1995-03-09 20 25 47.365   85.802   -4.084    3.98   0.00   0.1228   1.1767  F-CR1     1.183   0.00   63    1.125
+
+Distance to ISF Ref ( ISC         85.6012   -5.7542 ):   26.46 km; DZ:    6.0 km, AZI: 212.7 MA:    17.1 MI:    11.0 AZI:  123.2

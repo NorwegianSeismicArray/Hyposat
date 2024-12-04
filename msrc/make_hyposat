@@ -1,0 +1,117 @@
+#!/bin/csh -f
+
+##############################################################
+#                                                            #
+# Driver for Makefile for the program hyposat                #
+#                                                            #
+# July 2013, Johannes Schweitzer, NORSAR                     #
+#                                                            #
+#  johannes@norsar.no                                        #
+#                                                            #
+#  tested for SunOS f77      compiler                        #
+#  tested for Linux g77      compiler                        #
+#  tested for Linux gfortran compiler                        #
+#                                                            #
+#  latest changes February 2023:                             #
+#       SunOS removed                                        #
+#                                                            #  
+##############################################################
+#
+
+echo
+
+setenv UNIXVERS `uname -s`
+setenv HOSTNAME `hostname`
+
+echo make_hyposat $1 for $HOSTNAME running $UNIXVERS
+
+if ( $UNIXVERS != 'Linux' ) then
+	echo "Unknow operation system"
+	exit
+endif
+
+setenv M "l"
+
+#
+#  start of FORTRAN compiler specific lines
+#
+
+#
+# to be used with g77 compiler
+#
+##	setenv F77 "g77"
+##
+##	setenv FFLAG "-c -malign-double -fno-automatic -fno-backslash "
+##
+##	setenv LFLAG "-s"
+##
+##	setenv DEBUG "-g3 -Wall -fbounds-check"
+##	setenv DEBUG ""
+##
+
+
+#
+# to be used with gfortran compiler
+#
+	setenv F77 "/usr/bin/gfortran"
+
+	setenv FFLAG "-c -fno-automatic -fno-backslash -std=gnu"
+
+#
+## 	for debugging
+#
+
+#	setenv DEBUG "-g3 -Wall -frange-check"
+	setenv DEBUG " "
+
+#	setenv LFLAG "-lgfortran -lm"
+	setenv LFLAG "-lgfortran -lm -s"
+
+#
+#  C compiler specific lines
+#
+	setenv CC "/usr/bin/gcc"
+
+	setenv CFLAG "-c"
+
+#
+#  C++ compiler specific lines
+#
+
+#	setenv CCPP "/usr/bin/g++"
+	setenv CCPP "/usr/bin/gcc"
+
+	setenv CPPFLAG  "-std=gnu++11"
+
+	setenv LDPP "-lstdc++"
+#
+## for linkage
+#
+
+	setenv LD "/usr/bin/gfortran"
+
+#
+## for optimizing
+#
+
+	#setenv OPT "-O3"
+	setenv OPT "-O3 -ftree-loop-distribution -floop-block -floop-strip-mine -floop-interchange"
+
+
+echo
+echo "make install with :"
+echo "C-compiler       CC $CC"
+echo "Fortran-compiler F77 $F77"
+echo
+
+if ( $1 == 'clean' ) then
+     make clean
+     exit
+endif
+
+make hyposat
+
+make hypomod
+
+exit
+#
