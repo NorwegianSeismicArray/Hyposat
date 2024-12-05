@@ -8,7 +8,6 @@ include_directories(
 
 
 SET( hyposat_SRCS
-    hyposat.f
 
     gm2.h
     gmi.h
@@ -50,10 +49,15 @@ SET( hyposat_SRCS
     jsonstorage.cpp
 )
 
-add_executable( hyposat ${hyposat_SRCS} )
+add_executable( hyposat hyposat.f ${hyposat_SRCS} )
 set_target_properties( hyposat PROPERTIES
     LINKER_LANGUAGE Fortran
 )
+add_executable( hypomod hypomod.f ${hyposat_SRCS} )
+set_target_properties( hypomod PROPERTIES
+    LINKER_LANGUAGE Fortran
+)
+
 
 if (WIN32)
     target_link_libraries( hyposat
@@ -63,15 +67,8 @@ endif (WIN32)
 
 
 
-if (BUILD_PYTHON_EXTENSION)
-    install(
-        TARGETS hyposat
-        RUNTIME DESTINATION hyposatpy/bin
-    )
-else()
-    install(
-        TARGETS hyposat
-        RUNTIME DESTINATION bin
-)
+install(
+    TARGETS hyposat
+    RUNTIME DESTINATION bin
 
-endif()
+
