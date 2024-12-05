@@ -15,8 +15,12 @@ To build Hyposat, you need:
 - CMake >= 3.1
 - A build system generator: For example ninja or make
 
-Tested on windows with Visual Studio 2017 and later and Intel OneAPI
+Tested on windows with Visual Studio 2017 and later and Intel OneAPI.
 Tested on Linux with gcc and gfortran
+
+The windows build expects Microsoft C/C++ compilers and Intel Fortran compilers.
+ 
+
 
 ## Build instructions
 
@@ -24,7 +28,7 @@ You may use cmake-gui to setup the build environment,
 or you can use the cmake CLI...
 We recommend to build in a separate build directory to keep the code clean
 
-## Example of building with ninja generator in directory hyposat-build:
+## Example of building with default generator in directory hyposat-build:
 
 mkdir hyposat-build
 cd hyposat-build/
@@ -33,14 +37,20 @@ cd hyposat-build/
 
 cmake -D CMAKE_BUILD_TYPE:String="Release" -D CMAKE_INSTALL_PREFIX:String="../hyposat-install" ..
 
-### Starting build...
+To force a specific generator, you can specify it on the command line:
+For example:
+
+cmake -G Ninja CMAKE_BUILD_TYPE:String="Release" -D CMAKE_INSTALL_PREFIX:String="../hyposat-install" ..
+
+### Running build without installing...
 
 cmake --build . --target all
 
 ### Installing in ../hyposat-install
 
-ninja install
+cmake --build . --target install
 
 ### Creating install package for installing anywhere...
 
-ninja package
+cmake --build . --target install
+

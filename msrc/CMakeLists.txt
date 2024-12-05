@@ -3,10 +3,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 enable_language(Fortran)
 
-include_directories(
-)
-
-
 SET( hyposat_SRCS
 
     gm2.h
@@ -63,12 +59,14 @@ if (WIN32)
     target_link_libraries( hyposat
         vcruntime
     )
+    target_link_libraries( hypomod
+        vcruntime
+    )
 endif (WIN32)
 
 
-
 install(
-    TARGETS hyposat
+    TARGETS hyposat hypomod
     RUNTIME DESTINATION bin
-
+    )
 

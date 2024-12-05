@@ -48,8 +48,8 @@ message(STATUS "CMAKE_EXE_LINKER_FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
 message(STATUS "")
 
 set (HYPOSAT_VERSION_MAJOR 6)
-set (HYPOSAT_VERSION_MINOR 0)
-set (HYPOSAT_VERSION_PATCH f)
+set (HYPOSAT_VERSION_MINOR 1)
+set (HYPOSAT_VERSION_PATCH d)
 
 
 ####################################################################################################################
@@ -104,6 +104,8 @@ message(STATUS "----------------------------------------------------------------
 
 
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/" DESTINATION data)
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/" DESTINATION examples)
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" DESTINATION . )
 
 
 ####################################################################################################################
@@ -118,10 +120,13 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "NORSAR Hyposat")
 set(CPACK_PACKAGE_VERSION_MAJOR "${HYPOSAT_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${HYPOSAT_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${HYPOSAT_VERSION_PATCH}")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+
 set(HYPOSAT_EXTERNAL_VERSION "${HYPOSAT_VERSION_MAJOR}.${HYPOSAT_VERSION_MINOR}.${HYPOSAT_VERSION_PATCH}")
 
 set(CPACK_PACKAGE_EXECUTABLES
     "hyposat" "Hyposat executable"
+    "hypomod" "Hypomod executable"
 )
 
 if(WIN32)
@@ -138,5 +143,4 @@ else()
     set(CPACK_PACKAGE_FILE_NAME "Hyposat")
 endif()
 
-    include(CPack)
-endif()
+include(CPack)
