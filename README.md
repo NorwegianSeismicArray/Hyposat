@@ -52,5 +52,5 @@ cmake --build . --target install
 
 ### Creating install package for installing anywhere...
 
-cmake --build . --target install
+cmake --build . --target package
 
