@@ -1,6 +1,6 @@
-#Program History
+# Program History
 
-First versions progammed in summer 1996 by
+# First version progammed in summer 1996 by
 
  Johannes Schweitzer 
  Institute of Geophysics
@@ -8,7 +8,7 @@ First versions progammed in summer 1996 by
  D-44780 BOCHUM
  Germany
 
-Major improvements, corrections or changes since summer 1996:
+# Major improvements, corrections or changes since summer 1996:
 
 12-15 February 1997
       czo = b  means: starting with 'f' and ending with 'd'
@@ -33,6 +33,8 @@ Version 3.0 June 2, 1997
       Checking if oscillating solution is running over 4 solutions.
 
 ==============================================================================
+
+# Further Developments since Summer 1997
 
 All changes and extensions in the whole program package from version 3.0b on after 1 July 1997:
 
