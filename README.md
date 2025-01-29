@@ -1,6 +1,6 @@
 # ABOUT HYPOSAT
 
-Hyposat is a file-in file-out utility for localization of seismic events that has been around for many decades.
+HYPOSAT is a file-in file-out utility for localization of seismic events that has been around for many decades.
 It has previously been shared to those interested via mail or ftp
 From version 6.1e, it is available in GitHub
 
@@ -32,7 +32,7 @@ The Program has been tested on Windows 10 and Windows 11 with Visual Studio 2017
 
 The Windows build expects Microsoft C/C++ compilers and Intel Fortran compilers.
  
-## Build instructions for Windows:
+## Build instructions:
 
 You may use cmake-gui to setup the build environment,
 or you can use the cmake CLI...
