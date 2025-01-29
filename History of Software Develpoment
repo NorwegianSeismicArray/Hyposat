@@ -46,60 +46,31 @@ All changes and extensions in the whole program package from version 3.0b on aft
 
  e-mail: johannes.schweitzer@norsar.no
 
-c
-c                       3.0b    July 10, 1997 at NORSAR
-c                               Switch diffflag included. If set to 
-c                               .ne.0 , no travel-time differences will 
-c                               be used.
-c
-c                               July 14, 1997
-c                               Determined phase name only printed if 
-c                               different from input phase name.
-c
-c                               July 18-23, 1997
-c                               Handling of dtm changed again. Now 
-c                               variable rms of resiudals of former 
-c                               solution (only if last change is smaller 
-c                               than 10*setcheck).
-c                               Removing small bug in order of output 
-c                               listing. Smaller changes in output-file.
-c
-c                       3.0c    July 25-30, 1997
-c
-c                               Several mistypings removed. Phase-naming
-c                               changed and logical errors removed.
-c                               Smaller adjustments to relocate 
-c                               REB-events.
-c
-c                               ERROR due to -180 deg / +180 deg border
-c                               for calculating a mean starting solution 
-c                               removed!
-c
-c                               Iteration also stops if the last change
-c                               of hypocenter is smaller than 1/1000 of
-c                               distance to the nearest station (as long
-c                               as SETCHECK has the default value of 
-c                               1.).
-c                               All these ditances are measured in [km].
-c                               
-c               Version 3.1     August 2-8, 1997
-c                               SDLATG corrected for events in the 
-c                               souther hemisphere.
-c
-c                               Handling of multiple-core phases 
-c                               changed. Backazimuth handling of LR, LQ 
-c                               fixed.
-c
-c                               Calculating standard deviations fixed, 
-c                               if only two observations are available 
-c                               for Wadati-curve.
-c
-c                               Because no ellipticity corrections are 
-c                               available for events deeper than 700 km,
-c                               we accept a smal error for events 
-c                               between 700 km and 800 km.
-c
-c               Version 3.2     September, 21 - October, 16 1997
+Version 3.0b    July 10, 1997 at NORSAR
+                Switch diffflag included. If set to .ne.0, no travel-time differences will be used.
+                July 14, 1997
+                Determined phase name only printed if different from input phase name.
+
+                July 18-23, 1997
+                Handling of dtm changed again. Now variable rms of resiudals of former solution (only if last change is smaller than 10*setcheck).
+                Removing small bug in order of output listing. Smaller changes in output-file.
+
+                3.0c    July 25-30, 1997
+                Several mistypings removed. Phase-naming changed and logical errors removed.
+                Smaller adjustments to relocate REB-events.
+
+                ERROR due to -180 deg / +180 deg border for calculating a mean starting solution removed!
+
+                Iteration also stops if the last change of hypocenter is smaller than 1/1000 of distance to the nearest station (as long as SETCHECK has the default value of 1.).
+                All these ditances are measured in [km].
+
+Version 3.1     August 2-8, 1997
+                SDLATG corrected for events in the souther hemisphere.
+                Handling of multiple-core phases changed. Backazimuth handling of LR, LQ fixed.
+                Calculating standard deviations fixed, if only two observations are available for Wadati-curve.
+                Because no ellipticity corrections are available for events deeper than 700 km, we accept a smal error for events between 700 km and 800 km.
+
+Version 3.2     September, 21 - October, 16 1997
 c                               Plotting removed and the parameter file 
 c                               decoupled from data file. Possibility to
 c                               give a starting epicenter and its 
