@@ -16,37 +16,37 @@
 
 12-15 February 1997
 
-      czo = b  means: starting with 'f' and ending with 'd'
+    czo = b  means: starting with 'f' and ending with 'd'
+		
+    Flow of calculations for oscillating solutions changed, especially for depth determinations.
+		
+    Correcting to-time for Wadati formula; included some maximum values for to.
       
-      Flow of calculations for oscillating solutions changed, especially for depth determinations.
+    Handling of dtm changed.
       
-      Correcting to-time for Wadati formula; included some maximum values for to.
-      
-      Handling of dtm changed.
-      
-      P1 and S1 included as phase name for (unknown) first P- and S-onsets. The program choose the right name depending on travel-time table and distance.
+    P1 and S1 included as phase name for (unknown) first P- and S-onsets. The program choose the right name depending on travel-time table and distance.
 
 13 March 1997
 
-      Usage of PKiKP instead of PKPdf whenever PKPdf does not exist (for observations around the triplication). Similar changes for P/Pdif and S/Sdif.
+    Usage of PKiKP instead of PKPdf whenever PKPdf does not exist (for observations around the triplication). Similar changes for P/Pdif and S/Sdif.
       
-      Startsolution always at the closest station, if no backazimuth information is available.
+    Startsolution always at the closest station, if no backazimuth information is available.
 
 23 April 1997
 
-      Some changes in hyposat_gmi to print out the resolution, covariance, correlation, and the information-density matrix.
+    Some changes in hyposat_gmi to print out the resolution, covariance, correlation, and the information-density matrix.
 
 Version 2.2 May 8, 1997
 
-      Station corrections included with file station.cor.
+    Station corrections included with file station.cor.
       
-      Small bug to calculate dpdh removed.
+    Small bug to calculate dpdh removed.
 
 Version 3.0 June 2, 1997
 
-      Local velocity model included.
+    Local velocity model included.
       
-      Checking if oscillating solution is running over 4 solutions.
+    Checking if oscillating solution is running over 4 solutions.
 
 ==============================================================================
 
@@ -75,10 +75,10 @@ Version 3.0b    July 10, 1997
                 Determined phase name only printed if different from input phase name.
 
                 July 18-23, 1997
+            
+    Handling of dtm changed again. Now variable rms of resiudals of former solution (only if last change is smaller than 10*setcheck).
                 
-                Handling of dtm changed again. Now variable rms of resiudals of former solution (only if last change is smaller than 10*setcheck).
-                
-                Removing small bug in order of output listing. Smaller changes in output-file.
+    Removing small bug in order of output listing. Smaller changes in output-file.
 
 Version 3.0c    July 25-30, 1997
 
