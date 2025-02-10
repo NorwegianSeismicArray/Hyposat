@@ -2,10 +2,14 @@
 
 # First version progammed in summer 1996 by
 
- Johannes Schweitzer 
+ Johannes Schweitzer
+ 
  Institute of Geophysics
+ 
  Ruhr-University Bochum
+ 
  D-44780 BOCHUM
+ 
  Germany
 
 # Major improvements, corrections or changes since summer 1996:
@@ -13,14 +17,19 @@
 12-15 February 1997
 
       czo = b  means: starting with 'f' and ending with 'd'
+      
       Flow of calculations for oscillating solutions changed, especially for depth determinations.
+      
       Correcting to-time for Wadati formula; included some maximum values for to.
+      
       Handling of dtm changed.
+      
       P1 and S1 included as phase name for (unknown) first P- and S-onsets. The program choose the right name depending on travel-time table and distance.
 
 13 March 1997
 
       Usage of PKiKP instead of PKPdf whenever PKPdf does not exist (for observations around the triplication). Similar changes for P/Pdif and S/Sdif.
+      
       Startsolution always at the closest station, if no backazimuth information is available.
 
 23 April 1997
@@ -30,11 +39,13 @@
 Version 2.2 May 8, 1997
 
       Station corrections included with file station.cor.
+      
       Small bug to calculate dpdh removed.
 
 Version 3.0 June 2, 1997
 
       Local velocity model included.
+      
       Checking if oscillating solution is running over 4 solutions.
 
 ==============================================================================
@@ -44,9 +55,13 @@ Version 3.0 June 2, 1997
 All changes and extensions in the whole program package from version 3.0b on after 1 July 1997:
 
  Johannes Schweitzer
+ 
  NORSAR
+ 
  P.O.Box 53
+ 
  NO-2027 KJELLER
+ 
  Norway
 
  e-mail: johannes.schweitzer@norsar.no
@@ -62,6 +77,7 @@ Version 3.0b    July 10, 1997
                 July 18-23, 1997
                 
                 Handling of dtm changed again. Now variable rms of resiudals of former solution (only if last change is smaller than 10*setcheck).
+                
                 Removing small bug in order of output listing. Smaller changes in output-file.
 
 Version 3.0c    July 25-30, 1997
@@ -72,7 +88,7 @@ Version 3.0c    July 25-30, 1997
 
                 ERROR due to -180 deg / +180 deg border for calculating a mean starting solution removed!
 
-                Iteration also stops if the last change of hypocenter is smaller than 1/1000 of distance to the nearest station (as long as SETCHECK has the default value of 1.). All these ditances are measured in [km].
+                Iteration also stops if the last change of hypocenter is smaller than 1/1000 of distance to the nearest station (as long as SETCHECK has the default value of 1.). All these distances are measured in [km].
 
 Version 3.1     August 2-8, 1997
 
