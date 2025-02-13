@@ -1,31 +1,26 @@
 # Program History
 
-## First version progammed in summer 1996 by
+## First version progammed in summer 1996
 
-Johannes Schweitzer 
-Institute of Geophysics
-Ruhr-University Bochum
-D-44780 BOCHUM
-Germany
+	Johannes Schweitzer
+	Institute of Geophysics
+	Ruhr-University Bochum
+	D-44780 BOCHUM
+	Germany
 
 ## Major improvements, corrections or changes since summer 1996:
 
 12-15 February 1997
 
 	czo = b means: starting with 'f' and ending with 'd'
-
 	Flow of calculations for oscillating solutions changed, especially for depth determinations.
-
 	Correcting to-time for Wadati formula; included some maximum values for to.
-
 	Handling of dtm changed.
-
 	P1 and S1 included as phase name for (unknown) first P- and S-onsets. The program choose the right name depending on travel-time table and distance.
 
 13 March 1997
 
 	Usage of PKiKP instead of PKPdf whenever PKPdf does not exist (for observations around the triplication). Similar changes for P/Pdif and S/Sdif.
-
 	Startsolution always at the closest station, if no backazimuth information is available.
 
 23 April 1997
@@ -35,13 +30,11 @@ Germany
 Version 2.2 May 8, 1997
 
 	Station corrections included with file station.cor.
-
 	Small bug to calculate dpdh removed.
 
 Version 3.0 June 2, 1997
 
 	Local velocity model included.
-
 	Checking if oscillating solution is running over 4 solutions.
 
 ==============================================================================
@@ -50,18 +43,18 @@ Version 3.0 June 2, 1997
 
 All changes and extensions in the whole program package from version 3.0b on after 1 July 1997:
 
-Johannes Schweitzer
-NORSAR
-P.O.Box 53
-NO-2027 KJELLER
-Norway
+	Johannes Schweitzer
+	NORSAR
+	P.O.Box 53
+	NO-2027 KJELLER
+	Norway
 
 e-mail: johannes.schweitzer@norsar.no
 
 Version 3.0b July 10, 1997
 
 	Switch diffflag included. If set to .ne.0, no travel-time differences will be used.
-
+ 
 	July 14, 1997
 
 	Determined phase name only printed if different from input phase name.
@@ -418,12 +411,10 @@ Version 6.1 June 2020 - January 2021
 	Phase name 'X' added for unknown phase as alternative for IASPEI phase tx
 	ISC/ISF 'EVID' changed to 10 characters
 	MTYPE changed to array and made automatically accessible for usage by different standard models
-
-	Reading of local/regional model moved to separate subroutine: 
-	hyposat_crust_mod.f all model input
-	hyposat_crust.ffor crustal corrections (station & reflection)
-	hyposat_loc.f TT calculations for crustal and regional phases
-
+	Reading of local/regional model moved to separate subroutines: 
+		hyposat_crust_mod.f all model input
+		hyposat_crust.ffor crustal corrections (station & reflection)
+		hyposat_loc.f TT calculations for crustal and regional phases
 	Possible use of ISC default depth or in the middle crust (as defined in CRUST 1.0) added
 	Uncertainties of network magnitudes added
 	pwP-type phases included (accpeted by input and automatically recognized by using Crust 1.0 for correction of reflection points)
