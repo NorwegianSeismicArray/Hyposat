@@ -75,7 +75,6 @@ Version 3.0c July 25-30, 1997
 Version 3.1 August 2-8, 1997
 
 	SDLATG corrected for events in the souther hemisphere.
-
  	Handling of multiple-core phases changed.
 	Backazimuth handling of LR, LQ fixed.
 	Calculating standard deviations fixed, if only two observations are available for Wadati-curve.
