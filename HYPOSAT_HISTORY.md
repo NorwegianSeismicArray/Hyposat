@@ -2,11 +2,7 @@
 
 ## First version progammed in summer 1996
 
-	Johannes Schweitzer
-	Institute of Geophysics
-	Ruhr-University Bochum
-	D-44780 BOCHUM
-	Germany
+	Johannes Schweitzer @ Institute of Geophysics, Ruhr-University Bochum, BOCHUM, Germany
 
 ## Major improvements, corrections or changes since summer 1996:
 
@@ -41,7 +37,7 @@ Version 3.0 June 2, 1997
 
 ## Further Developments since Summer 1997
 
-All changes and extensions in the whole program package from version 3.0b on after 1 July 1997:
+All changes and extensions in the whole program package from Version 3.0b on after 1 July 1997:
 
 	Johannes Schweitzer
 	NORSAR
@@ -468,6 +464,8 @@ Version 6.1e August - Januar 2025
 	CPQ (see ISC publication) included as measure of location quality
 	hyposat_loc changed to handle better models without Conrad or Moho discontinuities
 
-Version 6.1f February 2025 First GitHub version
+Version 6.1f February - March 2025 
+
+Version 6.2 April 2025 First GitHub version
 
 	Distribution with new Manual
