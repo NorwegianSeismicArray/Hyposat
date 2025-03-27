@@ -19,7 +19,7 @@ Schweitzer, J. (2018). User manual for HYPOSAT 6 and HYPOMOD 2. NMSOP-3, PD 11.1
 
 Schweitzer, J. (2025). Travel-time corrections for seismic event locations. Accepted for publication by Journal of Geological Society of India (JGSI).
 
-Schweitzer, J. (2025). HYPOSAT 6.1 and HYPOMOD 2.1 - The User Manual. NORSAR, doi: 10.21348/p.2025.0001.
+Schweitzer, J. (2025). HYPOSAT 6.2 and HYPOMOD 2.2 - The User Manual. NORSAR, doi: 10.21348/p.2025.0001.
 
 ## Build requirements
 
