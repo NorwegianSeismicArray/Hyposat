@@ -46,6 +46,6 @@
 	Version 2.1 February 2023
 	Compatible with HYPOSAT_6.1b
 
-	Version 2.1a February 2025
+	Version 2.2 April 2025
 	Compatible with HYPOSAT_6.1f
 
