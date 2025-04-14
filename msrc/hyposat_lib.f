@@ -489,4 +489,28 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      function rdig(a,i)
 
+c     function to round the real number a to i decimal digits to avoid
+c     numbers like  -0.00 when printing out.
+
+      real*8 a, b, rdig
+      integer i, j
+
+      rdig = a
+
+      if(a.lt.0.d0) then
+
+        j = -i-1
+        b = -5.d0 * 10.d0**j
+
+        if(a.gt.b) rdig = 0.d0
+
+c       print *,i,a,rdig,b
+
+      endif
+
+      return
+
+      end
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

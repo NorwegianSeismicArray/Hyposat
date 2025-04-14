@@ -32,7 +32,9 @@ c
 c     April 2021     double mutlitples included (calculated together
 c                    with single multiples)
 c
-c     last changes/corrections 04. July 2022
+c     August 2024    density of rays per layer increased
+c
+c     last changes/corrections 1 November 2024
 c
 
       subroutine ttloc(ho,dis,czo1,nphas2,ttc,dtdd,dtdh,dpdh,dddp,
@@ -183,7 +185,8 @@ c     MAXLA   =    maximum number of allowed layers in the model as defined in
 c
 c                  model.h
 c
-c               (if needed then change also parameter MAXLA in subroutine reflex )
+c               (if needed then also parameter MAXLA in subroutine reflex has 
+c                to be changed!!! )
 c
 c
       include 'model.h'
@@ -224,8 +227,8 @@ c
       RE=6371.d0
       AA=PIM*RE
 
-      IB = 20
-      if(locgeo.or.dis.le.0.1) IB = 100
+      IB = 100
+      if(locgeo.or.dis.le.0.1) IB = 500
       IBN= IB*10
 
       ierr = 0
@@ -248,11 +251,11 @@ c
 
       endif
 
-       if (typctl.ge.8) then
+      if (typctl.ge.8) then
          print *,'Decoded INDPH ',indph,indph1,indph2,indph3,indph4,
      +           indph5
          print *,'imo ',imo,' mtyp ',mtyp
-       endif
+      endif
 
       if (imo.le.2 .or. imo.eq.5) then
 
@@ -274,12 +277,7 @@ c
 
          itrue = 0
          inum = 1
-         call get_mod_c10(itrue,inum,typctl,ierr)
-
-         if(ierr.ne.0) then
-            ierr = 99
-            go to 9000
-         endif
+         call get_mod_c10(itrue,inum,typctl)
 
          go to 100
 
@@ -293,10 +291,10 @@ c
 
 100   continue
 
-      imoh = 600
-      icon = 600
-      ipd  = 0
-      isd  = 0
+      imoh = 2*maxla
+      icon = 2*maxla
+      ipd  = 2*maxla
+      isd  = 2*maxla
 
 c
 c     reset onset table
@@ -461,7 +459,7 @@ C
         print *,'[hyposat_loc] Model used:'
         print *,'i z h v(1) v(2) v2(1) v2(2) g(1) g(2)'
         do 811 i=1,j
-        print*,i,az(i),z(i),h(i),v(1,i),v(2,i),v2(1,i),v2(2,i),
+        print*,i,z(i),h(i),az(i),v(1,i),v(2,i),v2(1,i),v2(2,i),
      +  g(1,i),g(2,i)
 811      continue
       endif
@@ -497,18 +495,17 @@ c
 c     plus defining requested direct phases
 C
 
-      if(kp) phase(1:1)='P'
-      if(ks) phase(1:1)='S'
-
-      if(iqq.le.imoh) then
-         if(iqq.le.icon) phase(2:)='g      '
-         if(iqq.gt.icon) phase(2:)='b      '
-      else
-         phase(2:)='n      '
+      if(kp) then
+         phase='Pg      '
+         if(iqq.gt.icon) phase='Pb      '
+         if(iqq.gt.imoh) phase='Pn      '
+         if(iqq.ge.ipd)  phase='P       '
+      else if(ks) then
+         phase='Sg      '
+         if(iqq.gt.icon) phase='Sb      '
+         if(iqq.gt.imoh) phase='Sn      '
+         if(iqq.ge.isd)  phase='S       '
       endif
-
-      if((kp .and. (iqq.ge.ipd) .and. (ipd.ne.0)) .or.
-     +   (ks .and. (iqq.ge.isd) .and. (isd.ne.0)) ) phase(2:)='       '
 
       if(iss.gt.iqq) then
 
@@ -575,28 +572,34 @@ C
       VMAX=V(K,IQ5)
 
       DO 1300 I=1,IQ5
+
       FA(1,I)=2.d0
       FA(2,I)=0.d0
+
       IF(I.GE.imul) FA(1,I)=FFA
-      IF(I.LT.IQQ)  THEN
-         FA(1,I)=FA(1,I)-1.d0
-         if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
-c        GO TO 1300
-      ENDIF
+      IF(I.LT.IQQ)  FA(1,I)=FA(1,I)-1.d0
       IF(I.LT.IQ4.AND.surf) FA(1,I)=FA(1,I)+1.d0
+      if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
+
       IF(I.LT.IQ4.AND.surfc) then
          FA(2,I)=FA(2,I)+1.d0
+         if(i.lt.iss) FA(2,I)=FA(2,I)-1.d0
          IF(k.eq.1 .and. VMAX.LT.V(2,I)) VMAX=V(2,I)
          IF(k.eq.2 .and. VMAX.LT.V(1,I)) VMAX=V(1,I)
       endif
-      if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
       IF(fa(1,i).gt.0.9d0 .and. VMAX.LT.V(K,I)) VMAX=V(K,I)
+
 1300  continue
 C
 C
       DO 3000 I=IQ5,M
 
       if (ndisc(i).ne.0) go to 3000
+
+      D=V2(K,I)
+      IF(D.LE.VMAX)  GO TO    3000
+
+      IF(imul.LT.M.AND.I.LT.imul) GO TO 2600
 
       ib2 = ib
       ib1 = 1
@@ -606,23 +609,17 @@ C
       IF(I.GE.imul) FA(1,I)=FFA
       if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
 
-      if(kp) phase(1:1)='P'
-      if(ks) phase(1:1)='S'
-
-      if(i.lt.imoh) then
-         if(i.le.icon) phase(2:)='g      '
-         if(i.gt.icon) phase(2:)='b      '
-      else
-         phase(2:)='n      '
+      if(kp) then
+         phase='Pg      '
+         if(i.ge.icon) phase='Pb      '
+         if(i.ge.imoh) phase='Pn      '
+         if(i.ge.ipd)  phase='P       '
+      else if(ks) then
+         phase='Sg      '
+         if(i.ge.icon) phase='Sb      '
+         if(i.ge.imoh) phase='Sn      '
+         if(i.ge.isd)  phase='S       '
       endif
-
-      if((kp .and. i.ge.ipd .and. ipd.ne.0) .or.
-     +   (ks .and. i.ge.isd .and. isd.ne.0) ) phase(2:)='       '
-
-      D=V2(K,I)
-      IF(D.LE.VMAX)  GO TO    3000
-
-      IF(imul.LT.M.AND.I.LT.imul) GO TO 2600
 
       C=V(K,I)
       IF(C.LT.VMAX) C=VMAX

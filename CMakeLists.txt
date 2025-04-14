@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1.0)
+cmake_minimum_required (VERSION 3.26.0)
 project(Hyposat)
 enable_language(Fortran)
 
@@ -48,8 +48,8 @@ message(STATUS "CMAKE_EXE_LINKER_FLAGS: ${CMAKE_EXE_LINKER_FLAGS}")
 message(STATUS "")
 
 set (HYPOSAT_VERSION_MAJOR 6)
-set (HYPOSAT_VERSION_MINOR 1)
-set (HYPOSAT_VERSION_PATCH d)
+set (HYPOSAT_VERSION_MINOR 2)
+set (HYPOSAT_VERSION_PATCH 0)
 
 
 ####################################################################################################################

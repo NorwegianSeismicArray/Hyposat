@@ -253,6 +253,7 @@ c     print *,phase,rayp,xcor,tcor,rayok
       return
       end
 
+      
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine ellip_read(ecolatr,azi,del,zo,phas,p,ecor,ierr)
 c
@@ -348,8 +349,6 @@ C Make sure to read correction file...
 
       return
       end
-
-
 
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -505,7 +504,7 @@ c       environment variable name corrected: Jan 27, 1997
 c
 c    May 2021 JS:
 c    changed to double precision
-c    reading chaned from 'direct access' readings to one time input
+c    reading changed from 'direct access' readings to one time input
 c
 c
 c     save sc0,sc1,sc2
@@ -628,10 +627,8 @@ c         print*, 'phcode,np,d1,d2: ', j,phcod(j),np(j),d1(j),d2(j)
 
 c 
        close (35)
-       if (ind.lt.1) then
-         return
-       endif
        return
+
       endif
 
 
@@ -673,7 +670,7 @@ c     to reduce code, use only one function to count characters
 c
       nc=min(len_trim(phase),8)
       do 10 i=1,NUMPH
-c        print *,i,phase,nc,phcod(i),phnch(i)
+c     print *,i,phase,nc,phcod(i),phnch(i)
         if(nc.ne.phnch(i)) goto 10
         if (phase(1:nc) .eq. phcod(i)(1:nc)) then
           ip = i
@@ -689,10 +686,11 @@ c                                             check phase aliases
 c                                              phase not found
 c     print *, 'ip:',ip,phase
       if(ip.lt.0) then
-        print *, phase,'  is not available'
+c       print *, phase,'  is not available'
         abrt = .true.
         return
       endif
+
 c     Ne = phspn(ip)
       if(np(ip).ne.phspn(ip)) then
         print*, 'ELPCOR: HELP! - index wrong for ellip. corrections'
@@ -717,7 +715,7 @@ c                                  depth index
          endif
  25    continue
  26    continue
-c       print *, 'idist, jdepth;',idist,jdepth
+c      print *, 'idist, jdepth;',idist,jdepth
 c
 *                      need to allow for zero entries (where phase
 *                      description strongly depth dependent)
@@ -758,7 +756,7 @@ c tau2
      ^             (edepth-dpth(jdepth))/(dpth(jdepth+1)-dpth(jdepth))
          tau2 = g2
 c
-c         print *, 'tau0,tau1,tau2:',tau0,tau1,tau2
+c        print *, 'tau0,tau1,tau2:',tau0,tau1,tau2
 c j.s.   caz = cos(azim)
 c j.s.   cbz = cos(2.0*azim)
 c         print *, 'azim,caz,cbz',azim,caz,cbz    

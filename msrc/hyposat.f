@@ -1,4 +1,4 @@
-c ----------------------------------------------------------------------
+c----------------------------------------------------------------------
 c  
 c          Johannes Schweitzer
 c          NORSAR
@@ -11,25 +11,25 @@ c
 c----------------------------------------------------------------------
 c
 c
-      program HYPOSAT_6_1d
+      program HYPOSAT_6_2
 
       implicit real*8 (a-h,o-z)
       implicit integer (i-n)
 
       character  version*25, VDATE*20, cprog*50
-      parameter (version='HYPOSAT Version 6.1d     ' )
-c     parameter (vdate=' ( 16 April 2024) ' )
+      parameter (version='HYPOSAT Version 6.2      ' )
+c     parameter (vdate=' ( 1 April 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes:  16 April 2024
+c     last changes: 1 April 2025
 c
 c----------------------------------------------------------------------
 c
 c                        Short desciption 
 c
 c     (For more details see the newest HYPOSAT-Manual and HYPOSAT 
-c      related papers in NORSAR Sci. Rep., PAGEOPH and PEPI.)
+c      related publications.)
 c
 c     This program locates seismic events by iteratively inverting
 c     observed onset times, backazimuths, and slowness values.
@@ -77,8 +77,9 @@ c                hyposat_gmi, indexx, isf_out_line, magfact, mult_ons,
 c                plane, tauget_mod, tauget_ray, testphase, ttloc, zo2to
 c
 c     functions: alpha1, alpha2, convlat, phase_type, phasw,
-c                ddmax, dirdel, dmean, q2, radloc
-c                file_checkpara, read_event_id, read_origin, 
+c                ddmax, dirdel, dmean, q2, radloc, wdepth, rdid
+c                file_checkpara, getchi, dpythag,
+c                read_event_id, read_origin, 
 c                read_origin_head, read_phase_head, read_phase, 
 c                write_origin, write_origin_head, lowcas, uppcas,
 c                write_isf_error
@@ -100,7 +101,9 @@ c
 c     Functions called: variable definitions
 c
       real*8           alpha1, alpha2, convlat, dirdel, q2, 
-     +                 radloc, dmean, ddmax, getchi, dpythag, wdepth
+     +                 radloc, dmean, ddmax, getchi, dpythag, wdepth,
+     +                 rdig
+     
       character        phase_type*1, file_check*512, file_checkpara*512,
      +                 filepara*512, lowcas*40, uppcas*40, chgcas*40,
      +                 get_mtyp*3, phasw*8
@@ -131,6 +134,7 @@ c
 c     when changing these parameters remember to change also 
 c     gmi.h & gm2.h
 c
+
       parameter (mread = 4000, mr2=mread/2, mrd2 = 150)
 
       parameter (mloc  = (mread/2 + 3)*mread)
@@ -142,7 +146,7 @@ c
      +          arid(mread)*8,statcorstr*80, texth*160,phid0*8,
      +          comment(mread)*72,comm2(mrd2)*72,usedm*6,phsearch*1,
      +          useds*6, phcheck*8, usedr*1, usedsr*1, 
-     +          textouts*150
+     +          textouts*1024,stringt*30,onflag(mread)*3
 
       dimension azi(mread),tt(mread),p(mread),azis(mread),tts(mread),
      +          ps(mread),period(mread),amplit(mread),dinv(mread,4),
@@ -188,9 +192,9 @@ c
 
       real*4 rzo,rdel,razi,rzo1,rzo2,rdel1,rmcorr, rdelk
 
-      logical first/.true./
-      real*4  zso/0./
-      character modnamo*20/' '/
+      logical first
+      real*4  zso
+      character modnamo*20
       common /bkin0/first,modnamo,zso
 
 c
@@ -220,7 +224,9 @@ c
 
       character cdum*1, cdum2*20, author*10, onscha*1,cevid*10, cdum3*2,
      +          phisf*10, isf_ref*10, phidd*10, author2*10, dformat*6,
-     +          dsformat*5, corid*8, corid2*8, cpick*1
+     +          dsformat*5, corid*8, corid2*8, cpick*1, cduma*1, 
+     +          cpol*1, cdumi*1
+
 
       real*4    rdum, rpa, ramp, rper, rsnr, rlati, rloni, rdepi,
      +          rdmi, rdma, rdum0, relmax, relmin
@@ -241,7 +247,7 @@ c
      +          typctlm, y00, mon00, d00, h00, idetyp, ierc, json_rc
 
       character mm*4,name*48
-      real*8    lat,lon,kmdel,dlati,dloni,ddepi, elevs, dazir
+      real*8    lat,lon,kmdel,dlati,dloni,ddepi, elevs, dazir, cpq, cpq2
       real*4    sec, rlat, rlon, smag
 
       character title*140, czo*1, region*80, czo1*1, magtypp*3, cfix*8,
@@ -250,8 +256,8 @@ c
 
 c
 c     idtmax = number of different travel-time-difference definitions
-c              used calculating a initial value for the source time by 
-c              using the Wadati-approach
+c              used for calculating a initial value for the source time
+c              by using the Wadati-approach
 c
       parameter (idtmax = 4)
 
@@ -265,20 +271,24 @@ c
      +          last, magflag, lastfixi, direct, plflag, wflag,
      +          conr, rayok, rayokf, aziini, aziall,
      +          kmout, thbaz, thray, tresw, lastfixt, lastfixm,
-     +          mttres, isf_in, isf_out, fixinp, lsmu, ref_eve, 
-     +          pflag, lgflag, sgflag, wadati, check_mult, aziflag,
-     +          sloflag, gapobs, isf_epi, isf_dep, isf_all, 
+     +          mttres, isf_in, isf_out, unc_out, fixinp, lsmu, 
+     +          ref_eve, pflag, lgflag, sgflag, wadati, check_mult, 
+     +          aziflag, sloflag, gapobs, isf_epi, isf_dep, isf_all, 
      +          new_in, lgsurf, rgsurf, tsurf, lpsurf, isurf,
      +          lrmsisc, firston, firstph, first2, azionlyf, ldepth0,
      +          old_syntax, emerout, larid, fsetloc, ldefd(3), ldefisc,
      +          lcomfix, primef, lstcor, ftvar, favar, fsvar, fdtvar,
      +          ftw, faw, fsw, fdtw, fth, fah, fsh, fdth, eflag, fconr,
      +          fmoho, ldist, llimdel, lwdepth, json_out, lauto, lautot,
-     +          lautor, l_noepi, lwater, lmaxm
+     +          lautor, l_noepi, lwater, lmaxm, lpick
 
 c
 c     some constants and initial or default values
 c
+
+      first = .true. 
+      zso   = 0. 
+      modnamo = '                    '
 
       pi      = 4.d0*datan(1.d0)
       deg2rad = pi / 180.d0
@@ -345,6 +355,7 @@ c
       lauto    = .false.
       lautot   = .false.
       lautor   = .false.
+      lpick    = .false.
       l_noepi  = .false.
       fsetloc  = .false.
       single   = .false.
@@ -352,6 +363,7 @@ c
       json_out = .false.
       isf_in   = .false.
       isf_out  = .false.
+      unc_out = .false.
       isf_epi  = .false.
       isf_dep  = .false.
       isf_all  = .false.
@@ -416,6 +428,7 @@ c
       ldepth0 = .false.
       lwdepth = .false.
       lwater  = .false.
+      zwater  = 0.d0
 
       ldist   =  .false.
 
@@ -468,7 +481,7 @@ c
       dpam0 = 10.d0
       typctl = 4
       islow = 1
-      setcheck1 = 0.d0
+      setcheck1 = -999.d0
       setcheck  = 1.d0
       thrfixi0 = 0.005d0
       indph0 = 3333
@@ -508,13 +521,11 @@ c
       smpnu = -9.d0 
       smpbu = -9.d0 
       smpgu = -9.d0 
-      smpphu = -9.d0 
       smsu = -9.d0 
       smsnu = -9.d0 
       smsbu = -9.d0 
       smsgu = -9.d0 
       smlgu = -9.d0 
-      smsphu = -9.d0 
       lsmu  =  .false.
       var2(1) = 0.d0
       var2(2) = 0.d0
@@ -561,9 +572,9 @@ c
       delmlmin = 0.d0
       delmlmax = 180.d0
 
-      magtypp  = ' '
-      magtyps  = ' '
-      magtypml = ' '
+      magtypp  = 'G-R'
+      magtyps  = 'IASPEI'
+      magtypml = 'Bath'
       magmlfile = 'MLCORR.TABLE'
       lmaxm    = .true.
 
@@ -588,31 +599,38 @@ c
 
       read (9,'(a)',end=2) string
 
-      chgcas = uppcas(string(1:35))
-      string(1:35) = chgcas(1:35)
+      icolon = index(string,':')
+
+      if(icolon.ne.0) then
+         icolon1 = icolon-1
+         chgcas = uppcas(string(1:icolon1))
+         string(1:icolon1) = chgcas(1:icolon1)
+      endif
 
       if(string(1:1).eq.' ') go to 1
       if(string(1:1).eq.'*') go to 1
       if(string(1:1).eq.'?') go to 1
-      if(string(36:37).ne.': ') then
+
+      if(icolon.eq.0) then
          print *,' Wrong syntax (ignored): ',trim(string)
          go to 1
       endif
 
-      if(string(1:14).eq.'GLOBAL MODEL  ') then
-          read (string(38:),'(a)') modnam(1)
-          mtype(1) = get_mtyp(modnam(1))
-          go to 1
+      if(string(icolon+1:icolon+1).ne.' ') then
+         print *,' Wrong syntax (ignored): ',trim(string)
+         go to 1
       endif
 
+      icolon2 = icolon+2
+
       if(string(1:14).eq.'GLOBAL MODEL 1') then
-          read (string(38:),'(a)') modnam(1)
+          read (string(icolon2:),'(a)') modnam(1)
           mtype(1) = get_mtyp(modnam(1))
           go to 1
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 2') then
-          read (string(38:),'(a)') modnam(2)
+          read (string(icolon2:),'(a)') modnam(2)
           if(modnam(2) .ne. '_' .and. modnam(2).ne.' ') then
             modflag(2) = .true.
             imodn(2) = 1
@@ -626,7 +644,7 @@ c
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 3') then
-          read (string(38:),'(a)') modnam(3)
+          read (string(icolon2:),'(a)') modnam(3)
           if(modnam(3) .ne. '_' .and. modnam(3).ne.' ') then
             modflag(3) = .true.
             imodn(3) = 1
@@ -640,7 +658,7 @@ c
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 4') then
-          read (string(38:),'(a)') modnam(4)
+          read (string(icolon2:),'(a)') modnam(4)
           if(modnam(4) .ne. '_' .and. modnam(3).ne.' ') then
             modflag(4) = .true.
             imodn(4) = 1
@@ -653,20 +671,26 @@ c
           go to 1
       endif
 
+      if(string(1:12).eq.'GLOBAL MODEL') then
+          read (string(icolon2:),'(a)') modnam(1)
+          mtype(1) = get_mtyp(modnam(1))
+          go to 1
+      endif
+
       if(string(1:25).eq.'GLOBAL CRUSTAL MODEL CODE') then
-          read (string(38:),'(a)') mtyp0
+          read (string(icolon2:),'(a)') mtyp0
           go to 1
       endif
 
       if(string(1:23).eq.'LOCAL OR REGIONAL MODEL') then
-          read (string(38:),'(a)') filloc
+          read (string(icolon2:),'(a)') filloc
           go to 1
       endif
 
       if(string(1:19).eq.'VERY LOCAL GEOMETRY') then
           intinp = 0
           locgeo = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) locgeo = .true.
           go to 1
       endif
@@ -674,7 +698,7 @@ c
       if(string(1:27).eq.'LOCAL STATION BELOW SURFACE') then
           intinp = 0
           locsta = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) locsta = .true.
           go to 1
       endif
@@ -682,19 +706,28 @@ c
       if(string(1:24).eq.'OUTPUT OF REGIONAL MODEL') then
           intinp = 0
           modout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) modout = .true.
           go to 1
       endif
 
-      if(string(1:10).eq.'CRUST 5.1 ') then
+      if(string(1:9).eq.'CRUST 5.1') then
           print *, 'WARNING: CRUST 5.1 not longer supported,'
           print *, 'we try to use newer CRUST 1.0 instead!'
-          string(1:10) = 'CRUST 1.0 '
+          string(1:9) = 'CRUST 1.0'
       endif
 
-      if(string(1:11).eq.'CRUST 1.0  ') then
-          read (string(38:),*) imo
+      if(string(1:20).eq.'CRUST 1.0 DEPTH TYPE') then
+          c1typ = 'mc'
+          read (string(icolon2:),'(a)') c1type
+          chgcas = lowcas(c1type)
+          if(chgcas.eq.'uc' .or. chgcas.eq.'mc' .or.
+     +       chgcas.eq.'lc' .or. chgcas.eq.'mo' ) c1typ = chgcas(1:2)
+          go to 1
+      endif
+          
+      if(string(1:9).eq.'CRUST 1.0') then
+          read (string(icolon2:),*) imo
           if(imo.lt.0) imo = 0
           if(imo.gt.6) then
              print *, 'WARNING: Wrong CRUST 1.0 parameter!, set to 0'
@@ -704,7 +737,7 @@ c
       endif
 
       if(string(1:12).eq.'STATION FILE') then
-          read (string(38:),'(a)') stationfile
+          read (string(icolon2:),'(a)') stationfile
           stationfile = file_check(stationfile)
           go to 1
       endif
@@ -712,14 +745,14 @@ c
       if(string(1:19).eq.'STATION CORRECTIONS') then
           intinp = 0
           vlflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) vlflag = .true.
           go to 1
       endif
 
       if(string(1:23).eq.'STATION CORRECTION FILE') then
           stcorfl = .false.
-          read (string(38:),'(a)') statcorfile
+          read (string(icolon2:),'(a)') statcorfile
           if(len_trim(statcorfile).gt.0 .and.
      +        trim(statcorfile).ne.'_'   ) then
               statcorfile = file_check(statcorfile)
@@ -731,19 +764,19 @@ c
       if(string(1:27).eq.'STATION CORR ONLY 1ST PHASE') then
           intinp = 0
           firstph = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) firstph = .true.
           go to 1
       endif
 
       if(string(1:31).eq.'P-VELOCITY TO CORRECT ELEVATION') then
-          read (string(38:),*) vpl
+          read (string(icolon2:),*) vpl
           if(vpl.gt.99.d0 .or. vpl.lt.1.d-3) vpl=5.8d0
           go to 1
       endif
 
       if(string(1:31).eq.'S-VELOCITY TO CORRECT ELEVATION') then
-          read (string(38:),*) vsl
+          read (string(icolon2:),*) vsl
           if(vsl.gt.99.d0) vsl=3.46d0
           if(vsl.lt.1.d-3) then
              if(vsl.gt.-1.d-3 .and. (vpl.ge.2.d-3 .and. vpl.le.99.d0))
@@ -758,7 +791,7 @@ c
 
       if(string(1:17).eq.'PLANE WAVE APPROX') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) plflag = .false.
           go to 1
       endif
@@ -766,17 +799,19 @@ c
       if(string(1:20).eq.'STARTING SOURCE TIME') then
 c
 c     time formats supported: epochal time 
-c          or ASCII formated: yyyy-doy:hh.mi.ss.sss
-c                             yyyy-mm-dd:hh.mi.ss.sss
+c          or ASCII formated: yyyy-doy?hh?mi?ss.sss
+c                             yyyy-mm-dd?hh?mi?ss.sss
 c
 c          seconds may be omitted
 c
-          if(string(38:38) .eq. '_') go to 1
-          if(string(38:38) .eq. '0') go to 1
-          if(string(38:39) .eq. '0.') go to 1
+          stringt = string(icolon2:icolon2+29)
+
+          if(stringt(1:1) .eq. '_') go to 1
+          if(stringt(1:1) .eq. '0') go to 1
+          if(stringt(1:2) .eq. '0.') go to 1
           
-          if(string(42:42).ne.'-') then
-             read (string(38:),*) timein
+          if(stringt(5:5).ne.'-') then
+             read (stringt,*) timein
              if(timein.gt.tome0) tome0 = timein
           else
 
@@ -789,22 +824,29 @@ c
             mi   = 0
             sec  = 0.
 
-            if(string(45:45).ne.'-') then
-               if(len_trim(string).lt.51) then
-                  print *,'Check format for source time in',
+            if(stringt(8:8).ne.'-') then
+               if(len_trim(stringt).lt.14) then
+                  print *,'Check format for source time in ',
      +                    'hyposat-parameter file'
                   go to 9999
                endif
-              read (string(38:51),'(i4,x,i3,2(x,i2))') yy,idoy,hh,mi
-              if(len_trim(string).gt.52) read (string(53:),*) sec
+              read (stringt(1:14),'(i4,x,i3,2(x,i2))') yy,idoy,hh,mi
+              if(len_trim(stringt).gt.15) read (stringt(16:),*) sec
             else
-              if(len_trim(string).lt.53) then
-                  print *,'Check format for source time in',
-     +                    'hyposat-parameter file'
+              if(len_trim(stringt).lt.16) then
+                 print *,'Check format for source time in ',
+     +                   'hyposat-parameter file'
                  go to 9999
               endif
-              read (string(38:53),'(i4,4(x,i2))') yy,mon,dd,hh,mi
-              if(len_trim(string).gt.54) read (string(55:),*) sec
+              read (stringt(1:16),'(i4,4(x,i2))') yy,mon,dd,hh,mi
+              if(len_trim(stringt).gt.17) read (stringt(18:),*) sec
+            endif
+
+            if(sec.ge.60.0) then
+               print *,'Check format for source time in ',
+     +                 'hyposat-parameter file, seconds >= 60'
+               print *,'Source time: ',yy,mon,dd,hh,mi,sec
+               go to 9999
             endif
 
             call fhtoe(tome0,idum,yy,mon,mm,dd,idoy,hh,mi,sec)
@@ -813,49 +855,32 @@ c
           go to 1
       endif
 
-      if(string(1:25).eq.'STARTING TIME UNCERTAINTY') then
-          read (string(38:),*) stome0
+      if(string(1:25).eq.'STARTING TIME UNCERTAINTY' .or.
+     +   string(1:19).eq.'STARTING TIME ERROR') then
+          read (string(icolon2:),*) stome0
           go to 1
       endif
 
-      if(string(1:19).eq.'STARTING TIME ERROR') then
-          read (string(38:),*) stome0
-          go to 1
-      endif
-
-      if(string(1:28).eq.'DOUBLE SIDED TIME UNCERTAINTY') then
+      if(string(1:28).eq.'DOUBLE SIDED TIME UNCERTAINTY' .or.
+     +   string(1:22).eq.'DOUBLE SIDED TIME ERROR') then
           tresw = .false.
-          read (string(38:),*) itresw
+          read (string(icolon2:),*) itresw
           if(itresw.eq.1 .or. itresw.eq.2) then
              tresw  = .true.
           endif
           go to 1
       endif
 
-      if(string(1:22).eq.'DOUBLE SIDED TIME ERROR') then
-          tresw = .false.
-          read (string(38:),*) itresw
-          if(itresw.eq.1 .or. itresw.eq.2) then
-             tresw  = .true.
-          endif
-          go to 1
-      endif
-
-      if(string(1:28).eq.'DBLE SID. UNCERTAINTY FACTOR') then
-          read (string(38:),*) treswf
-          if(treswf.le.0.d0) treswf = 1.d0
-          go to 1
-      endif
-
-      if(string(1:22).eq.'DBLE SID. ERROR FACTOR') then
-          read (string(38:),*) treswf
+      if(string(1:28).eq.'DBLE SID. UNCERTAINTY FACTOR' .or.
+     +   string(1:22).eq.'DBLE SID. ERROR FACTOR') then
+          read (string(icolon2:),*) treswf
           if(treswf.le.0.d0) treswf = 1.d0
           go to 1
       endif
 
       if(string(1:18).eq.'DOWNWEIGHTING TASD') then
           downw = ' '
-          read (string(38:),'(a4)') downw
+          read (string(icolon2:),'(a4)') downw
           if(downw(1:1).eq.'1') ftvar = .true.
           if(downw(2:2).eq.'1') favar = .true.
           if(downw(3:3).eq.'1') fsvar = .true.
@@ -872,25 +897,20 @@ c
       endif
 
       if(string(1:21).eq.'STARTING SOURCE DEPTH') then
-          read (string(38:),*) zo1
+          read (string(icolon2:),*) zo1
           go to 1
       endif
 
-      if(string(1:26).eq.'STARTING DEPTH UNCERTAINTY') then
-          read (string(38:),*) sdzo1
-          if(sdzo1.eq.0.d0) sdzo1 = 50.d0
-          go to 1
-      endif
-
-      if(string(1:20).eq.'STARTING DEPTH ERROR') then
-          read (string(38:),*) sdzo1
+      if(string(1:26).eq.'STARTING DEPTH UNCERTAINTY' .or.
+     +   string(1:20).eq.'STARTING DEPTH ERROR') then
+          read (string(icolon2:),*) sdzo1
           if(sdzo1.eq.0.d0) sdzo1 = 50.d0
           go to 1
       endif
 
       if(string(1:10).eq.'DEPTH FLAG') then
           ldefisc = .false.
-          read (string(38:),'(a)') czo
+          read (string(icolon2:),'(a)') czo
           if(czo .eq. 'i' .or. czo.eq.'I') then
              ldefisc = .true.
              czo = 'F'
@@ -902,18 +922,9 @@ c
           go to 1
       endif
 
-      if(string(1:20).eq.'CRUST 1.0 DEPTH TYPE') then
-          c1typ = 'mc'
-          read (string(38:),'(a)') c1type
-          chgcas = lowcas(c1type)
-          if(chgcas.eq.'uc' .or. chgcas.eq.'mc' .or.
-     +       chgcas.eq.'lc' .or. chgcas.eq.'mo' ) c1typ = chgcas(1:2)
-          go to 1
-      endif
-          
       if(string(1:18).eq.'DEFAULT DEPTH TYPE') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.gt.0 .and. intinp.lt.5) then
              ideptyp = intinp
           else
@@ -925,7 +936,7 @@ c
       if(string(1:27).eq.'CHECK DEPTH FOR WATER LAYER') then
           intinp = 0
           lwdepth   = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lwdepth   = .true.
           go to 1
       endif
@@ -933,19 +944,19 @@ c
       if(string(1:20).eq.'DEPTH ALLOWED ABOVE 0') then
           intinp = 0
           ldepth0   = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) ldepth0   = .true.
           go to 1
       endif
 
       if(string(1:13).eq.'MINIMUM DEPTH') then
-          read (string(38:),*) depthmin
+          read (string(icolon2:),*) depthmin
           if(depthmin.lt.0.d0) depthmin = 0.d0
           go to 1
       endif
 
       if(string(1:13).eq.'MAXIMUM DEPTH') then
-          read (string(38:),*) depthmax
+          read (string(icolon2:),*) depthmax
           if(depthmax.gt.800.d0) depthmax = 800.d0
           go to 1
       endif
@@ -953,24 +964,31 @@ c
       if(string(1:25).eq.'AUTOMATIC PROCESSING TELE') then
           intinp = 0
           lautot = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) lautot  = .true.
+          read (string(icolon2:),*) intinp
+          if(intinp.eq.1) then
+             lpick = .true.
+             lautot  = .true.
+          endif
           go to 1
       endif
 
       if(string(1:29).eq.'AUTOMATIC PROCESSING REGIONAL') then
           intinp = 0
           lautot = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) lautor  = .true.
+          read (string(icolon2:),*) intinp
+          if(intinp.eq.1) then
+             lpick = .true.
+             lautor  = .true.
+          endif
           go to 1
       endif
 
       if(string(1:20).eq.'AUTOMATIC PROCESSING') then
           intinp = 0
           lauto  = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
+             lpick = .true. 
              lauto   = .true.
              lautot  = .true.
              lautor  = .true.
@@ -980,156 +998,149 @@ c
 
       if(string(1:24).eq.'STARTING SOURCE LATITUDE') then
           abc = -999.0d0
-          if(string(38:38).eq.'_') then
+          if(string(icolon2:icolon2).eq.'_') then
             epilat0 = abc
             go to 1
           endif
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-90.d0 .and. abc.le.90.d0) epilat0 = abc
           go to 1
       endif
 
-      if(string(1:29).eq.'STARTING LATITUDE UNCERTAINTY') then
-          read (string(38:),*) sdlatgi0
-          go to 1
-      endif
-
-      if(string(1:23).eq.'STARTING LATITUDE ERROR') then
-          read (string(38:),*) sdlatgi0
+      if(string(1:29).eq.'STARTING LATITUDE UNCERTAINTY' .or.
+     +   string(1:23).eq.'STARTING LATITUDE ERROR') then
+          read (string(icolon2:),*) sdlatgi0
           go to 1
       endif
 
       if(string(1:25).eq.'STARTING SOURCE LONGITUDE') then
           abc = -999.0d0
-          if(string(38:38).eq.'_') then
+          if(string(icolon2:icolon2).eq.'_') then
             epilon0 = abc
             go to 1
           endif
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-180.d0 .and. abc.le.180.d0) epilon0 = abc
           go to 1
       endif
 
-      if(string(1:30).eq.'STARTING LONGITUDE UNCERTAINTY') then
-          read (string(38:),*) sdloni0
-          go to 1
-      endif
-
-      if(string(1:24).eq.'STARTING LONGITUDE ERROR') then
-          read (string(38:),*) sdloni0
+      if(string(1:30).eq.'STARTING LONGITUDE UNCERTAINTY' .or.
+     +   string(1:24).eq.'STARTING LONGITUDE ERROR') then
+          read (string(icolon2:),*) sdloni0
           go to 1
       endif
 
       if(string(1:27).eq.'INCLUDING MODEL UNCERTAINTY') then
           intinp = 0
           lsmu   = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lsmu   = .true.
           go to 1
       endif
 
       if(string(1:29).eq.'MEAN P-WAVE MODEL UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smpu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN PN TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smpnu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN PB TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smpbu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN PG TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smpgu = abc
           go to 1
       endif
 
       if(string(1:29).eq.'MEAN S-WAVE MODEL UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smsu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN SN TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smsnu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN SB TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smsbu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN SG TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smsgu = abc
           go to 1
       endif
 
       if(string(1:31).eq.'MEAN LG TRAVEL-TIME UNCERTAINTY') then
           abc = 0.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) smlgu = abc
           go to 1
       endif
 
       if(string(1:17).eq.'MIN DT FOR WADATI') then
-          read (string(38:),*) wadmin
+          read (string(icolon2:),*) wadmin
           if(wadmin.lt.0.d0) wadmin = 0.d0
           go to 1
       endif
 
       if(string(1:17).eq.'MAX DT FOR WADATI') then
-          read (string(38:),*) wadmax
+          read (string(icolon2:),*) wadmax
           go to 1
       endif
 
       if(string(1:20).eq.'MAX EPI DIST OF STAT') then
-          read (string(38:),*) dismaxst
+          read (string(icolon2:),*) dismaxst
           go to 1
       endif
 
       if(string(1:20).eq.'MIN EPI DIST OF STAT') then
-          read (string(38:),*) disminst
+          read (string(icolon2:),*) disminst
           go to 1
       endif
 
       if(string(1:20).eq.'OUTPUT ALL DISTANCES') then
           intinp = 0
           ldist   = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) ldist   = .true.
           go to 1
       endif
 
       if(string(1:23).eq.'MAXIMUM # OF ITERATIONS') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.gt.0) maxiter = intinp
           go to 1
       endif
 
-      if(string(1:24).eq.'# TO SEARCH OSCILLATIONS') then
+      if(string(1:33).eq.'ITERATIONS TO SEARCH OSCILLATIONS' .or.
+     +   string(1:24).eq.'# TO SEARCH OSCILLATIONS') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp .gt. mosci0) then
               print *, 'MAX # TO SEARCH OSCILLATIONS SET TO:',mosci0
               mosci = mosci0
@@ -1142,7 +1153,7 @@ c
       endif
 
       if(string(1:16).eq.'CONFIDENCE LEVEL') then
-          read (string(38:),*) confl
+          read (string(icolon2:),*) confl
           if(confl.lt.68.26895d0)  confl = 68.26895d0
           if(confl.gt.99.99d0)     confl = 99.99d0
           go to 1
@@ -1150,7 +1161,7 @@ c
 
       if(string(1:18).eq.'CONSTRAIN SOLUTION') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
              lastfixt = .true.
              lastfixi = .false.
@@ -1179,9 +1190,10 @@ c
           go to 1
       endif
 
-      if(string(1:26).eq.'MAXIMUM ALLOWED P RESIDUUM') then
+      if(string(1:26).eq.'MAXIMUM ALLOWED P RESIDUAL' .or.
+     +   string(1:26).eq.'MAXIMUM ALLOWED P RESIDUUM') then
           abc = -9.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) then
              resmaxp = abc
           else
@@ -1190,9 +1202,10 @@ c
           go to 1
       endif
 
-      if(string(1:26).eq.'MAXIMUM ALLOWED S RESIDUUM') then
+      if(string(1:26).eq.'MAXIMUM ALLOWED S RESIDUAL' .or.
+     +   string(1:26).eq.'MAXIMUM ALLOWED S RESIDUUM') then
           abc = -9.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) then
              resmaxs = abc
           else
@@ -1204,13 +1217,13 @@ c
       if(string(1:20).eq.'MEAN T-T RES. CORREC') then
           intinp = 0
           mttres = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) mttres = .true.
           go to 1
       endif
 
       if(string(1:29).eq.'INF. DENSITY MATRIX THRESHOLD') then
-          read (string(38:),*) thrfixi0
+          read (string(icolon2:),*) thrfixi0
           if(thrfixi0.gt.1.d0) then
              thrfixi0  = 1.d0
           else if(thrfixi0.le.0.d0) then
@@ -1219,16 +1232,10 @@ c
           go to 1
       endif
 
-      if(string(1:30).eq.'EPICENTER UNCERTAINTY ELLIPSE') then
+      if(string(1:30).eq.'EPICENTER UNCERTAINTY ELLIPSE' .or.
+     +   string(1:23).eq.'EPICENTER ERROR ELLIPSE') then
           iellip = .true.
-          read (string(38:),*) iellipi
-          if(iellipi.ne.1) iellip = .false.
-          go to 1
-      endif
-
-      if(string(1:23).eq.'EPICENTER ERROR ELLIPSE') then
-          iellip = .true.
-          read (string(38:),*) iellipi
+          read (string(icolon2:),*) iellipi
           if(iellipi.ne.1) iellip = .false.
           go to 1
       endif
@@ -1236,101 +1243,62 @@ c
       if(string(1:30).eq.'AZIMUTHAL GAP FOR OBSERVATIONS') then
           intinp = 0
           gapobs = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) gapobs = .true.
           go to 1
       endif
 
-      if(string(1:20).eq.'MAXIMUM BAZ RESIDUUM') then
-          read (string(38:),*) dazim0
+      if(string(1:20).eq.'MAXIMUM BAZ RESIDUAL' .or.
+     +   string(1:20).eq.'MAXIMUM BAZ RESIDUUM' .or.
+     +   string(1:21).eq.'MAXIMUM AZIMUTH ERROR') then
+          read (string(icolon2:),*) dazim0
           go to 1
       endif
 
-      if(string(1:21).eq.'MAXIMUM AZIMUTH ERROR') then
-          read (string(38:),*) dazim0
-          go to 1
-      endif
-
-      if(string(1:12).eq.'BAZ ONLY LOC') then
+      if(string(1:12).eq.'BAZ ONLY LOC' .or.
+     +   string(1:16).eq.'AZIMUTH ONLY LOC') then
           intinp = 0
           azionlyf = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1)  azionlyf = .true.
           go to 1
       endif
 
-      if(string(1:16).eq.'AZIMUTH ONLY LOC') then
-          intinp = 0
-          azionlyf = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1)  azionlyf = .true.
-          go to 1
-      endif
-
-      if(string(1:15).eq.'BAZ AS DEFINING') then
+      if(string(1:15).eq.'BAZ AS DEFINING' .or.
+     +   string(1:19).eq.'AZIMUTH AS DEFINING') then
           intinp = 0
           aziflag = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) aziflag = .false.
           go to 1
       endif
 
-      if(string(1:19).eq.'AZIMUTH AS DEFINING') then
-          intinp = 0
-          aziflag = .true.
-          read (string(38:),*) intinp
-          if(intinp.ne.1) aziflag = .false.
+      if(string(1:26).eq.'MAX T RES FOR BAZ OF B USE' .or.
+     +   string(1:26).eq.'MAX T RES FOR AZI OF B USE') then
+          read (string(icolon2:),*) dtmaxazib 
           go to 1
       endif
 
-      if(string(1:26).eq.'MAX T RES FOR BAZ OF B USE') then
-          read (string(38:),*) dtmaxazib 
+      if(string(1:26).eq.'MAX T RES FOR BAZ OF L USE' .or.
+     +   string(1:26).eq.'MAX T RES FOR AZI OF L USE') then
+          read (string(icolon2:),*) dtmaxazil
           go to 1
       endif
 
-      if(string(1:26).eq.'MAX T RES FOR AZI OF B USE') then
-          read (string(38:),*) dtmaxazib 
-          go to 1
-      endif
-
-      if(string(1:26).eq.'MAX T RES FOR BAZ OF L USE') then
-          read (string(38:),*) dtmaxazil
-          go to 1
-      endif
-
-      if(string(1:26).eq.'MAX T RES FOR AZI OF L USE') then
-          read (string(38:),*) dtmaxazil
-          go to 1
-      endif
-
-      if(string(1:23).eq.'USE ALL BAZ INFORMATION') then
+      if(string(1:23).eq.'USE ALL BAZ INFORMATION' .or.
+     +   string(1:27).eq.'USE ALL AZIMUTH INFORMATION') then
           intinp = 0
           aziall = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) aziall = .true.
           go to 1
       endif
 
-      if(string(1:27).eq.'USE ALL AZIMUTH INFORMATION') then
-          intinp = 0
-          aziall = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) aziall = .true.
-          go to 1
-      endif
-
-      if(string(1:17).eq.'BAZ ONLY INIT SOL') then
+      if(string(1:17).eq.'BAZ ONLY INIT SOL' .or.
+     +   string(1:21).eq.'AZIMUTH ONLY INIT SOL') then
           intinp = 0
           aziini = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) aziini = .true.
-          go to 1
-      endif
-
-      if(string(1:21).eq.'AZIMUTH ONLY INIT SOL') then
-          intinp = 0
-          aziini = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) aziini = .true.
           go to 1
       endif
@@ -1338,28 +1306,25 @@ c
       if(string(1:20).eq.'SLOWNESS AS DEFINING') then
           intinp = 0
           sloflag = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) sloflag = .false.
           go to 1
       endif
 
-      if(string(1:25).eq.'MAXIMUM SLOWNESS RESIDUUM') then
-          read (string(38:),*) dpam0
-          go to 1
-      endif
-
-      if(string(1:22).eq.'MAXIMUM SLOWNESS ERROR') then
-          read (string(38:),*) dpam0
+      if(string(1:25).eq.'MAXIMUM SLOWNESS RESIDUAL' .or.
+     +   string(1:25).eq.'MAXIMUM SLOWNESS RESIDUUM' .or.
+     +   string(1:22).eq.'MAXIMUM SLOWNESS ERROR') then
+          read (string(icolon2:),*) dpam0
           go to 1
       endif
 
       if(string(1:26).eq.'MAX T RES FOR SLOWNESS USE') then
-          read (string(38:),*) dtmaxslow
+          read (string(icolon2:),*) dtmaxslow
           go to 1
       endif
 
       if(string(1:12).eq.'OUTPUT LEVEL') then
-          read (string(38:),*) typctl
+          read (string(icolon2:),*) typctl
           typctlm = typctl
           if(typctl.lt.-1)   typctl = 0
           if(typctl.ge.40)  typctl = 4
@@ -1374,26 +1339,26 @@ c
       if(string(1:27).eq.'FLAG EMERGENCE ANGLE OUTPUT') then
           intinp = 0
           emerout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) emerout = .true.
           go to 1
       endif
 
       if(string(1:16).eq.'SLOWNESS [S/DEG]') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.0 .or. intinp.eq.1) islow = intinp
           if(isf_in) islow = 1
           go to 1
       endif
 
       if(string(1:17).eq.'LOCATION ACCURACY') then
-          read (string(38:),*) setcheck1
+          read (string(icolon2:),*) setcheck1
           go to 1
       endif
 
       if(string(1:27).eq.'PHASE INDEX FOR LOCAL MODEL') then
-          read (string(38:),*) indph0
+          read (string(icolon2:),*) indph0
           if(indph0.gt.3333) then
             print *,'Wrong input: PHASE INDEX FOR LOCAL MODEL'
             go to 9999
@@ -1404,7 +1369,7 @@ c
       if(string(1:34).eq.'FLAG USING TRAVEL-TIME DIFFERENCES') then
           intinp = 0
           diffflag = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) diffflag = .false.
           go to 1
       endif
@@ -1412,15 +1377,21 @@ c
       if(string(1:22).eq.'FLAG USING INPUT FIXED') then
           intinp = 0
           fixinp = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) fixinp = .true.
+          read (string(icolon2:),*) intinp
+          if(intinp.eq.1) then
+             fixinp = .true.
+             lastfixt = .false.
+             lastfixi = .false.
+             lastfixm = .false.
+
+          endif
           go to 1
       endif
 
       if(string(1:29).eq.'FLAG CHECKING MULTIPLE ONSETS') then
           intinp = 0
           check_mult = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) check_mult = .true.
           go to 1
       endif
@@ -1428,27 +1399,28 @@ c
       if(string(1:19).eq.'FLAG NEW INPUT FILE') then
           intinp = 0
           new_in = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) new_in = .true.
           go to 1
       endif
 
       if(string(1:26).eq.'MAX DT FOR MULTIPLE ONSETS') then
-          read (string(38:),*) dtphmax
+          read (string(icolon2:),*) dtphmax
           if(dtphmax.le.0.d0) dtphmax = 5.0d0
           go to 1
       endif
 
       if(string(1:15).eq.'INPUT FILE NAME') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                        read (string(38:),*) inputfile
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) inputfile
           go to 1
       endif
 
       if(string(1:21).eq.'HYPOSAT-IN OLD SYNTAX') then
           intinp = 0
           old_syntax = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) old_syntax = .true.
           go to 1
       endif
@@ -1456,7 +1428,7 @@ c
       if(string(1:16).eq.'INPUT FORMAT ISF') then
           intinp = 0
           isf_in = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
              isf_in = .true.
              islow = 1
@@ -1465,7 +1437,7 @@ c
       endif
 
       if(string(1:22).eq.'ISF REFERENCE LOCATION') then
-          read (string(38:),'(a)') isf_ref 
+          read (string(icolon2:),'(a)') isf_ref 
           if(isf_ref.eq.'_') isf_ref = ' '
           go to 1
       endif
@@ -1473,7 +1445,7 @@ c
       if(string(1:13).eq.'ISF EPICENTER') then
           intinp = 0
           isf_epi = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) isf_epi=.true.
           go to 1
       endif
@@ -1481,74 +1453,82 @@ c
       if(string(1:9).eq.'ISF DEPTH') then
           intinp = 0
           isf_dep =  .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) isf_dep=.true.
+          read (string(icolon2:),*) intinp
+          if(intinp.eq.1) isf_dep = .true.
           go to 1
       endif
 
       if(string(1:14).eq.'ISF ALL PHASES') then
           intinp = 0
           isf_all =  .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) isf_all=.true.
           go to 1
       endif
 
+      if(string(1:23).eq.'TT DATA UNCERTAINTY OUT') then
+          intinp = 0
+          unc_out = .false.
+          read (string(icolon2:),*) intinp 
+          if(intinp.eq.1) unc_out = .true.
+          go to 1
+      endif
+
       if(string(1:5).eq.'ISF_i') then
-          read (string(38:),*) sisfi 
+          read (string(icolon2:),*) sisfi 
           if(sisfi.le.0.d0) sisfi = 0.1d0
           go to 1
       endif
 
       if(string(1:5).eq.'ISF_e') then
-          read (string(38:),*) sisfe
+          read (string(icolon2:),*) sisfe
           if(sisfe.le.0.d0) sisfe = 1.0d0
           go to 1
       endif
 
       if(string(1:5).eq.'ISF_o') then
-          read (string(38:),*) sisfo
+          read (string(icolon2:),*) sisfo
           if(sisfo.le.0.d0) sisfo = 2.d0
           go to 1
       endif
 
       if(string(1:7).eq.'ISF_baz') then
-          read (string(38:),*) sisfaz
+          read (string(icolon2:),*) sisfaz
           if(sisfaz.le.0.d0) sisfaz = 10.d0
           go to 1
       endif
 
       if(string(1:7).eq.'ISF_slo') then
-          read (string(38:),*) sisfsl
+          read (string(icolon2:),*) sisfsl
           if(sisfsl.le.0.d0) sisfsl = 1.d0
           go to 1
       endif
 
       if(string(1:22).eq.'ISF_2ND MODEL DISTANCE') then
           abc = -999.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0 .and. abc.le.180.d0) disfmod = abc
           go to 1
       endif
 
       if(string(1:12).eq.'ISF EVENT ID') then
           lc = len_trim(string)
-          read (string(38:lc),*) cevid
+          read (string(icolon2:lc),*) cevid
           lc = len_trim(cevid)
           if(lc.lt.10) then
              cevid = ' '
-             cevid(10-lc+1:10) = string(38:38+lc-1)
+             cevid(10-lc+1:10) = string(icolon2:icolon2+lc-1)
           endif
           go to 1
       endif
 
       if(string(1:13).eq.'ISF ORIGIN ID') then
           lc = len_trim(string)
-          read (string(38:lc),*) corid
+          read (string(icolon2:lc),*) corid
           lc = len_trim(corid)
           if(lc.lt.8) then
              corid = ' '
-             corid(8-lc+1:8) = string(38:38+lc-1)
+             corid(8-lc+1:8) = string(icolon2:icolon2+lc-1)
           endif
           go to 1
       endif
@@ -1556,35 +1536,37 @@ c
       if(string(1:17).eq.'OUTPUT FORMAT ISF') then
           intinp = 0
           isf_out = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) isf_out=.true.
           go to 1
       endif
 
       if(string(1:15).eq.'ISF OUTPUT FILE') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                  read (string(38:),*) isf_file
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) isf_file
           go to 1
       endif
 
       if(string(1:16).eq.'ISC-TYPE ISF RMS') then
           intinp = 0
           lrmsisc = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lrmsisc=.true.
           go to 1
       endif
 
       if(string(1:16).eq.'OUTPUT FILE NAME') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                        read (string(38:),*) outputfile
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) outputfile
           go to 1
       endif
 
       if(string(1:13).eq.'OUTPUT SWITCH') then
           intinp = 0
           output = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) output=.false.
           go to 1
       endif
@@ -1592,21 +1574,22 @@ c
       if(string(1:18).eq.'OUTPUT FORMAT JSON') then
           intinp = 0
           json_out =.false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) json_out = .true.
           go to 1
       endif
 
       if(string(1:16).eq.'JSON OUTPUT FILE') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                  read (string(38:),*) json_file
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) json_file
           go to 1
       endif
 
       if(string(1:12).eq.'OUTPUT IN KM') then
           intinp = 0
           kmout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) kmout = .true.
           go to 1
       endif
@@ -1615,7 +1598,7 @@ c
           intinp = 0
           thbaz = .false.
           thray = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) thbaz = .true.
           if(intinp.eq.2) thray = .true.
           if(intinp.eq.3) then
@@ -1626,20 +1609,20 @@ c
       endif
 
       if(string(1:18).eq.'AUTHOR OF SOLUTION') then
-          read (string(38:),'(a)') author
+          read (string(icolon2:),'(a)') author
           go to 1
       endif
 
       if(string(1:25).eq.'REGIONAL SURFACE WAVES LG') then
           intinp = 0
           lgsurf = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) lgsurf = .false.
           go to 1
       endif
 
       if(string(1:17).eq.'LG GROUP-VELOCITY') then
-         read (string(38:),*) vlg
+         read (string(icolon2:),*) vlg
          if(vlg.le.0.d0) vlg = vlg0
          go to 1
       endif
@@ -1647,13 +1630,13 @@ c
       if(string(1:25).eq.'REGIONAL SURFACE WAVES RG') then
           intinp = 0
           rgsurf = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) rgsurf = .false.
           go to 1
       endif
 
       if(string(1:17).eq.'RG GROUP-VELOCITY') then
-          read (string(38:),*) vrg
+          read (string(icolon2:),*) vrg
           if(vrg.le.0.d0) vrg = vrg0
           go to 1
       endif
@@ -1661,19 +1644,19 @@ c
       if(string(1:24).eq.'LP SURFACE WAVES (LQ/LR)') then
           intinp = 0
           lpsurf = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lpsurf = .true.
           go to 1
       endif
 
       if(string(1:17).eq.'LR GROUP-VELOCITY') then
-          read (string(38:),*) vlr
+          read (string(icolon2:),*) vlr
           if(vlr.le.0.d0) vlr = vlr0
           go to 1
       endif
 
       if(string(1:17).eq.'LQ GROUP-VELOCITY') then
-          read (string(38:),*) vlq
+          read (string(icolon2:),*) vlq
           if(vlq.le.0.d0) vlq = vlq0
           go to 1
       endif
@@ -1681,13 +1664,14 @@ c
       if(string(1:13).eq.'T-PHASE USAGE') then
           intinp = 0
           tsurf = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) tsurf = .true.
           go to 1
       endif
 
-      if(string(1:17).eq.'T PHASE GROUP-VEL') then
-          read (string(38:),*) vt
+      if(string(1:17).eq.'T-PHASE GROUP-VEL' .or.
+     +   string(1:17).eq.'T PHASE GROUP-VEL') then
+          read (string(icolon2:),*) vt
           if(vt.le.0.d0) vt = vt0
           go to 1
       endif
@@ -1695,27 +1679,28 @@ c
       if(string(1:14).eq.'IS-PHASE USAGE') then
           intinp = 0
           isurf = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) isurf = .true.
           go to 1
       endif
 
-      if(string(1:18).eq.'IS PHASE GROUP-VEL') then
-          read (string(38:),*) vi
+      if(string(1:18).eq.'IS-PHASE GROUP-VEL' .or.
+     +   string(1:18).eq.'IS PHASE GROUP-VEL') then
+          read (string(icolon2:),*) vi
           if(vi.le.0.d0) vi = vi0
           go to 1
       endif
 
       if(string(1:18).eq.'WATER LAYER ON TOP') then
           intinp = 0
-          read (string(38:),*) intinp 
+          read (string(icolon2:),*) intinp 
           if(intinp.gt.0 .and. intinp.lt.6) iwl = intinp 
           go to 1
       endif
 
       if(string(1:14).eq.'WATER LAYER DT') then
           abc = -999.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) dtdw = abc
           go to 1
       endif
@@ -1723,7 +1708,7 @@ c
       if(string(1:18).eq.'P-TYPE ONSETS ONLY') then
           intinp = 0
           pflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) pflag = .true.
           go to 1
       endif
@@ -1731,7 +1716,7 @@ c
       if(string(1:14).eq.'LG-PHASE TO SG') then
           intinp = 0
           lgflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lgflag = .true.
           go to 1
       endif
@@ -1739,14 +1724,14 @@ c
       if(string(1:14).eq.'SG-PHASE TO LG') then
           intinp = 0
           sgflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) sgflag = .true.
           go to 1
       endif
 
       if(string(1:15).eq.'SG--LG DISTANCE') then
           abc = -999.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0) sglgdis = abc
           go to 1
       endif
@@ -1754,71 +1739,72 @@ c
       if(string(1:21).eq.'MAGNITUDE CALCULATION') then
           intinp = 0
           magflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) magflag = .true.
           go to 1
       endif
 
       if(string(1:22).eq.'ALL STATION MAGNITUDES') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lmaxm = .false.
           go to 1
       endif
 
       if(string(1:19).eq.'P-ATTENUATION MODEL' .or.
      +   string(1:17).eq.'ATTENUATION MODEL'    ) then
-          read (string(38:),*) magtypp
+          read (string(icolon2:),*) magtypp
           go to 1
       endif
 
-      if(string(1:20).eq.'MS-ATTENUATION MODEL') then
-          read (string(38:),*) magtyps
+      if(string(1:20).eq.'MS-ATTENUATION MODEL' .or.
+     +   string(1:19).eq.'S-ATTENUATION MODEL') then
+          read (string(icolon2:),*) magtyps
           go to 1
       endif
 
       if(string(1:20).eq.'ML-ATTENUATION MODEL') then
-          read (string(38:),*) magtypml
+          read (string(icolon2:),*) magtypml
           go to 1
       endif
 
       if(string(1:18).eq.'ML-CORRECTION FILE') then
-          read (string(38:),*) magmlfile
+          read (string(icolon2:),*) magmlfile
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR MS') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmsmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR MB') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmbmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR ML') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmlmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR MS') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmsmax = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR MB') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmbmax = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR ML') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmlmax = abc
           go to 1
       endif
@@ -1826,27 +1812,27 @@ c
       if(string(1:15).eq.'REFERENCE EVENT') then
           intinp = 0
           ref_eve = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) ref_eve = .true.
           go to 1
       endif
 
       if(string(1:26).eq.'REFERENCE SOURCE LONGITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-180.d0 .and. abc.le.180.d0) dloni = abc
           go to 1
       endif
 
       if(string(1:25).eq.'REFERENCE SOURCE LATITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-90.d0 .and. abc.le.90.d0) dlati = abc
           go to 1
       endif
 
       if(string(1:22).eq.'REFERENCE SOURCE DEPTH') then
-          read (string(38:),*) ddepi
+          read (string(icolon2:),*) ddepi
           go to 1
       endif
 
@@ -1897,12 +1883,12 @@ c
 
         if(trim(json_file).eq.'JSON') then
            if(trim(outputfile).eq.'hyposat-out') then
-              json_file = 'hyposat-json'
+              json_file = 'hyposat-out.json'
            else
-              json_file = trim(outputfile) // '_json'
+              json_file = trim(outputfile) // '.json'
            endif
         else
-           json_file = trim(json_file) // '_json'
+           json_file = trim(json_file)
         endif
 
         call json_start_dict(json_file, json_prec, json_rc)
@@ -1928,11 +1914,11 @@ c
          print *,'statcorfile = ',statcorfile 
          print *,'inputfile   = ',inputfile 
          print *,'outputfile  = ',outputfile 
+         print *,'output switch ',output 
          print *,'output json ',json_out
          print *,'JSON out file  = ',json_file 
-         print *,'ISF out file  = ',isf_file 
          print *,'output isf ',isf_out 
-         print *,'output switch ',output 
+         print *,'ISF out file  = ',isf_file 
          print *,'vpl = ',vpl
          print *,'vsl = ',vsl
          print *,'vrg = ',vrg
@@ -2181,10 +2167,13 @@ c
             go to 33
          endif
 
-331      itest = read_origin(string(1:136),yyi,moni,ddi,hh,mi,isec,msec,
-     +   cdum,rdum,rdum,rlati,rloni,cdum,rdum,rdum,idum1,rdepi,
-     +   cdum,rdum,idum1,idum1,idum1,rdum,rdum,cdum,cdum,
-     +   cdum3,author2,corid2)
+331      rlati = 0.
+         rloni = 0.
+         rdepi = 0.
+         itest = read_origin(string(1:136),yyi,moni,ddi,hh,mi,isec,msec,
+     +           cdum,rdum,rdum,rlati,rloni,cdum,rdum,rdum,idum1,rdepi,
+     +           cdum,rdum,idum1,idum1,idum1,rdum,rdum,cdum,cdum,
+     +           cdum3,author2,corid2)
 
          if(itest.eq.20) then 
             itest = write_isf_error(typctl)
@@ -2294,6 +2283,8 @@ c           itest = write_isf_error(typctl)
       touse0  = 'TASDRM1  '
       arid(ii)= ' '
       tt2(ii) = -1.d0
+      onflag(ii) = '___'
+
 
       if(.not.isf_in) then
 
@@ -2437,11 +2428,19 @@ c           itest = write_isf_error(typctl)
       else
 
           onscha = ' '
+          razi = -9.
+          rpa = -9.
+          rper = -9.
+          ramp = 0.
+          rsnr = 0.
+          smag = 0.
+          cpick = ' '
+          cpol = ' '
 
           if(string(21:23).eq.' DI') string(21:23) = '_DI'
           itest = read_phase (string(1:123),stat,rdum0,rdum,phisf,hh,mi,
      +    isec,msec,rdum,razi,rdum,rpa,rdum,touse0(1:1),touse0(2:2),
-     +    touse0(3:3),rsnr,ramp,rper,cpick,cdum,onscha,cdum2,cdum,
+     +    touse0(3:3),rsnr,ramp,rper,cpick,cpol,onscha,cdum2,cdum,
      +    smag,arid(ii))
 
           if(itest.eq.20) then 
@@ -2463,7 +2462,8 @@ c         print *,stat,rdum0,hh,mi,isec,msec,phisf,razi,rpa,touse0
           chgcas = lowcas(onscha)
           onscha = chgcas(1:1)
 
-          if(onscha.ne.'i' .and. onscha.ne.'e') onscha='_'
+          if(onscha.ne.'i' .and. onscha.ne.'e' .and. onscha.ne.'q') 
+     +       onscha='_'
 
           sec = real(isec)
           if(msec.ne.isf_null) then
@@ -2641,6 +2641,10 @@ c             touse0(2:2) = 'A'
           if(onscha.eq.'e') tts(ii) = sisfe
           if(mod(msec,100).gt.0 .and. mod(msec+1,10).gt.0) 
      +           tts(ii) = 0.8d0 * tts(ii)
+
+          onflag(ii)(1:1) = cpick
+          onflag(ii)(2:2) = cpol
+          onflag(ii)(3:3) = onscha
 
           if(tts(ii).lt.0.1d0) tts(ii)=0.1d0
 
@@ -2831,6 +2835,8 @@ c     print*, timeo,jdate,yy,mon,mm,dd,idoy,hh,mi,sec
           ii = ii - 1
           ierr = 0
           go to 12
+        else
+          if(typctl.gt.5) print *,stat,jdate,lat,lon,elevs,name
         endif
 
         statpc = 0.d0
@@ -2844,6 +2850,7 @@ c     print*, timeo,jdate,yy,mon,mm,dd,idoy,hh,mi,sec
 7         statcorstr = ' '
           read (13,'(a)',end=81,err=81) statcorstr
           if(statcorstr(1:1).eq.'*') go to 7
+          if(len(trim(statcorstr)).eq.0) go to 7
 
           read(statcorstr,*,err=801,end=801) stat1,vpc,vsc,spc,ssc,src
           go to 69
@@ -3297,8 +3304,9 @@ c
            azim = 315.d0
 
            if(typctl.gt.0 .and. .not.rayokf) then
-                print *,'No epicenter found. Missing backazimuth ',
-     +                'values?'
+                print *,' '
+                print *,'No initial epicenter found. Missing ',
+     +                  'backazimuth values?'
                 print *,'Backazimuth set to ',azim,' degrees'
            endif
 
@@ -3441,16 +3449,18 @@ c
             if(kmdel.le.2000.d0) kmdel = dtwad*10.2d0
           endif
 
-        else if(((phai.eq.'P1      '  .or. phai.eq.'Pg      '  .or.
-     +            phai.eq.'Pb      '  .or. phai.eq.'Pn      '  .or.
-     +            phai.eq.'P       ').and. (phaj.eq.'S1      ' .or.
+        else if(( phai.eq.'P1      ' .and. (phaj.eq.'S1      ' .or.
      +            phaj.eq.'Sg      '  .or. phaj.eq.'Sb      '  .or.
      +            phaj.eq.'Sn      '  .or. phaj.eq.'S       ' )) .or.
-     +          ((phaj.eq.'P1      '  .or. phaj.eq.'Pg      '  .or.
-     +            phaj.eq.'Pb      '  .or. phaj.eq.'Pn      '  .or.
-     +            phaj.eq.'P       ').and. (phai.eq.'S1      ' .or.
-     +            phai.eq.'Sg      '  .or. phai.eq.'Sb      '  .or.
-     +            phai.eq.'Sn      '  .or. phai.eq.'S       ' )) ) then
+     +          ( phai.eq.'S1      ' .and. (phaj.eq.'P1      ' .or.
+     +            phaj.eq.'Pg      '  .or. phaj.eq.'Pb      '  .or.
+     +            phaj.eq.'Pn      '  .or. phaj.eq.'P       ' )) .or.
+     +          ((phai.eq.'Pg      '  .or. phai.eq.'Pb      '  .or. 
+     +            phai.eq.'Pn      '  .or. phai.eq.'P       ') .and. 
+     +            phaj.eq.'S1      ' ) .or.
+     +          ((phai.eq.'Sg      '  .or. phai.eq.'Sb      '  .or. 
+     +            phai.eq.'Sn      '  .or. phai.eq.'S       ') .and. 
+     +            phaj.eq.'P1      ' ) ) then
 c
 c         For P1 and S1 it is not automatically known, which phase it will
 c         become. We use AK135 to choose the most
@@ -3612,7 +3622,7 @@ c
                         print *,'Epicenter set to station ',sta(jref)
                       else
                         print *,'Epicenter set from station ',
-     +                            sta(jref),'after plane wave fit: ',
+     +                            sta(jref),' after plane wave fit: ',
      +                      'backazimuth',azim,' deg, delta',dtkm,' km' 
                       endif
                    endif
@@ -3681,7 +3691,6 @@ c
          sdlat0  = sdlatg0 * eps / (q2(dcos(elatmgr)) + 
      +                              eps*q2(dsin(elatmgr)))
       endif
-
 
       if(dismin.lt.pi .and. nloc.gt.0) then
          dismin = dismin * rad2deg * 5.d-2
@@ -3779,9 +3788,11 @@ c
         write(11,'(''Epicenter lon:'',f9.3,'' [deg]''/)') elonmf
 
         if(typctl.gt.0) then
+          print *,' '
           print *, 'Initial Epicenter set by input file'
           print *, 'Epicenter lat: ',elatmgf,' [deg]'
           print *, 'Epicenter lon: ',elonmf,' [deg]'
+          print *,' '
         endif
       endif
 
@@ -3979,26 +3990,35 @@ c
       svpvs   = 0.d0
       svpvss  = 0.d0
       ito     = 0
+      iwa     = 0
  
       do 82 i = 1,idtmax
  
       if(idt(i).le.0) go to 82
-      if(vpvs(i).lt.1.2d0.or.vpvs(i).gt.2.5d0) go to 82
+      if(vpvs(i).lt.1.2d0.or.vpvs(i).gt.2.5d0) then
+         idt(i) = 0
+         if(output) then
+           write(11,'(''S-P Travel-time difference type'',i2,
+     +      '' not used for mean value calculations''
+     +      '' because results are not trustable'')') i
+         endif
+         go to 82
+      endif
 
       ito = ito + 1
 
-      sto   = sto  + to(i)/tos(i)
-      stos  = stos + 1.d0 /tos(i)
+      iwa = iwa + idt(i)
+
+      sto   = sto  + idt(i)*to(i)/tos(i)
+      stos  = stos + idt(i)/tos(i)
  
-      svpvs = svpvs  + vpvs(i)/vpvss(i)
-      svpvss= svpvss + 1.d0   /vpvss(i)
+      svpvs = svpvs  + idt(i)*vpvs(i)/vpvss(i)
+      svpvss= svpvss + idt(i)/vpvss(i)
  
 82    continue
  
-      dto   = 0.d0
-      dvpvs = 0.d0
- 
       if(ito.eq.0) then
+
          if(fsetloc .or. nloc.ge.1) then
 
            call depi(stala(istatmin),stalo(istatmin),elatmg,elonm,
@@ -4023,27 +4043,33 @@ c
          vpvsm = 0.d0
          sdto = dtp0
          go to 85
+
       else
+
          tom   = sto / stos
          vpvsm = svpvs / svpvss
+
       endif
  
       if(ito.eq.1) then
-         sdto   = 1.d0 / stos
-         sdvpvs = 1.d0 / svpvss
+         sdto   = iwa / stos
+         sdvpvs = iwa / svpvss
          go to 85
       endif
 
+      dto   = 0.d0
+      dvpvs = 0.d0
+ 
       do 83 i =1,idtmax
 
       if(idt(i).le.0) go to 83
  
-      dto   = dto   + q2(to(i)-tom) / tos(i)
-      dvpvs = dvpvs + q2(vpvs(i)-vpvsm) / vpvss(i)
+      dto   = dto   + idt(i)*q2(to(i)-tom)     / tos(i)
+      dvpvs = dvpvs + idt(i)*q2(vpvs(i)-vpvsm) / vpvss(i)
  
 83    continue
  
-      sdto    = dsqrt(dto / svpvs)
+      sdto    = dsqrt(dto / stos)
       sdvpvs  = dsqrt(dvpvs / svpvss)
  
 85    continue
@@ -4169,7 +4195,6 @@ c
      +       sdzo, json_rc)
 
          call json_end_group(json_rc)
-         call json_end_group(json_rc)
       endif
 
 c     Add list of origins to output before loop begins
@@ -4213,6 +4238,7 @@ c
 c     At first, we build the Jacobi-matrix
 c     (loop 300 and 301)
 c
+      if(output) print*,' '
 
 100   continue
 
@@ -4493,8 +4519,7 @@ c              no event deeper than 799. km !
          f2 = dcos(costalatr)
          f4 = dsin(costalatr)
 
-         f5 = deg2rad*alpha1(stalo(iev(i))-elonm)
-         f5 = dabs(f5)
+         f5 = dabs(deg2rad*alpha1(stalo(iev(i))-elonm))
 
          f6 = dcos(f5)
          f8 = dsin(f5)
@@ -4578,14 +4603,14 @@ c         endif
 
       endif
 
-      if(fconr) then
+      if(fconr .and. .not. fixinp) then
         ipg = index(phid(1:3),'Pg')
         if(ipg.gt.0) phid(ipg:ipg+1) = 'Pb'
         isg = index(phid(1:3),'Sg')
         if(isg.gt.0) phid(isg:isg+1) = 'Sb'
       endif
 
-      if(fmoho) then
+      if(fmoho .and. .not. fixinp) then
         ipg = index(phid(1:3),'Pg')
         if(ipg.gt.0) phid(ipg:ipg+1) = 'Pn'
         ipb = index(phid(1:3),'Pb')
@@ -5163,15 +5188,13 @@ c
             fdt =  trefl2 - trefl
             dtt2 = dtt - fdt
 
-            if(iwl.le.0) then
-               wflag = .false.
-            else if(iwl.eq.1) then
+            wflag = .false.
+
+            if(iwl.eq.1) then
                wflag = .true.
             else if(iwl.eq.2) then
-               wflag = .false.
                if(dabs(dtt2).lt.dabs(dtt)) wflag = .true.
             else if(iwl.eq.3) then
-               wflag = .false.
                if(dabs(fdt).ge.dtdw .and. dabs(dtt2).lt.dabs(dtt)) 
      +            wflag = .true.
             else if(iwl.eq.4) then
@@ -5179,21 +5202,19 @@ c
                if(dabs(fdt).ge.dtdw .and. dabs(dtt2).gt.dabs(dtt)) 
      +            wflag = .false.
             else if(iwl.eq.5) then
-               wflag = .false.
                if(index(phase(i),'w').gt.0) wflag=.true.
             endif
 
 c           print *,'water layer: ',i,iwl,dtt,dtt2,fdt,dtdw,wflag
 
             if(wflag) then
-              delr   = delr2
-              trefl  = trefl2
-              ttt(i) = ttt(i) + fdt
-              dtt    = dtt2
-              phid   = phasw(phid)
+               delr   = delr2
+               trefl  = trefl2
+               ttt(i) = ttt(i) + fdt
+               phid   = phasw(phid)
+               dtt    = dtt2
             endif
          endif
-
 c
 c       reflection point correction of ray parameter
 c
@@ -5289,7 +5310,7 @@ c
            endif
 
 c
-c     adding model uncertainties 
+c     adding theoretical model uncertainties to the data uncertainty
 c
            if(lsmu ) then
 
@@ -5297,46 +5318,45 @@ c
               if(phase_t.eq.'P') then
                  f1 = smpu
                  if(phid.eq.'Pn') then
-                    f1 = smpnu
+                    if(smpnu.gt.0.d0) f1 = smpnu
                  else if(phid.eq.'Pb') then
-                    f1 = smpbu
+                    if(smpbu.gt.0.d0) f1 = smpbu
                  else if(phid.eq.'Pg') then
-                    f1 = smpgu
+                    if(smpgu.gt.0.d0) f1 = smpgu
                  endif
               else if(phase_t.eq.'S') then
                  f1 = smsu
                  if(phid.eq.'Sn') then
-                    f1 = smsnu
+                    if(smsnu.gt.0.d0) f1 = smsnu
                  else if(phid.eq.'Sb') then
-                    f1 = smsbu
+                    if(smsbu.gt.0.d0) f1 = smsbu
                  else if(phid.eq.'Sg') then
-                    f1 = smsgu
+                    if(smsgu.gt.0.d0) f1 = smsgu
                  else if(phid.eq.'Lg') then
-                    f1 = smlgu
+                    if(smlgu.gt.0.d0) f1 = smlgu
                  endif
               endif
 
-              if(f1.gt.0.d0) then
 c
-c          if possible model uncertainties are set, they are added 
+c          if possible model uncertainties were found, they are added 
 c          to the observation uncertainties:
 c
-                 dats(jj) = dpythag(dats(jj),f1)
+              if(f1.gt.0.d0) dats(jj) = dpythag(dats(jj),f1)
  
-              endif
-
            endif
              
 c
 c          (ierre.ne.0) > No ellipticity correction is available for 
-c                         this onset. We assume a larger data 
-c                         uncertainty!
+c                         this onset. We assume a larger uncertainty!
 c
            if(ierre.ne.0 .and. .not.surf) then
               dats(jj)= dats(jj) + 0.5d0
               ierre = 0
            endif
 
+c
+c          different data-types can be weighted unequally (see Manual)
+c
            if(ftvar) dats(jj) = dpythag(dats(jj),dtt)
            if(ftw)   dats(jj) = dats(jj) / 2.d0
            if(fth)   dats(jj) = dats(jj) * 2.d0
@@ -5361,6 +5381,7 @@ c
            endif
 
            used(i)(1:1) = 'T'
+           if(imin.eq.4) used(i)(1:1) = '2'
            used(i)(5:5) = usedr
            phaseu(i) = phid
 
@@ -5378,11 +5399,13 @@ c
          else if(dabs(dtt).le.dtm+dtdt .and. touse(i)(4:4).eq.'D') then
 
 c
-c          phase may be later usable for a travel-time-
+c          the phase may be later usable for a travel-time-
 c          difference observation.
 c
 
            used(i)(1:1) = 't'
+           if(imin.eq.4) used(i)(1:1) = '3'
+
            used(i)(5:5) = usedr
            phaseu(i) = phid
       
@@ -6135,7 +6158,19 @@ c
       if(im.eq.4) then
 
         ar4 = dabs(r(4))
-        if(ar4.gt.200.d0 ) then
+        if(ar4.ge.300d0 ) then
+           f1 = 0.d0
+           f2 = 0.d0
+           if(czo.eq.'D') then
+              czo='B'
+              if(output)
+     +           write(11,'(/''No resolution for depth, fixed at''
+     +                   ,f7.2)') zo
+              if(typctl.gt.0) 
+     +           print *,'No resolution for depth, fixed at ',zo
+              iterz = iterz + 1
+           endif
+        else if(ar4.gt.200.d0 .and.ar4.lt.300d0 ) then
            f1 = 128.175d0
            f2 = 0.1875d0
         else if(ar4.le.200.d0 .and. ar4.gt.100.d0 ) then
@@ -6188,7 +6223,9 @@ c       print *, 'Depth (2)',zo,r40,r(4),depuse
         rs(4) = dpythag(rs(4),r40)
         if(rs(4).gt.250.d0) rs(4) = 250.d0
 
-        call zo2to(depuse-r(4),tome,r(1))
+        if(dabs(depuse).gt.0.d0) call zo2to(depuse-r(4),tome,r(1))
+
+c       print *, 'Depth (3)',zo,r40,r(4),depuse,tome,r(1)
 
       endif
 c
@@ -6317,10 +6354,6 @@ c
             lwater = .true.
             zwater = 1000.d0*water
          else if (water .le. epsilon) then
-            if(.not.ldefisc) then
-              call zo2to(zo1-zo,tome,var(1))
-              zo = z01
-            endif
             lwater = .false.
          endif
       endif
@@ -7612,7 +7645,7 @@ c
          if(single .and. rayokf) then
 
 c
-c     too big ray parameter residuum for single array observation
+c     too big ray parameter residual for single array observation
 c
             if(dabs(p(i)-dpaa) .ge. 0.01d0) go to 420
 
@@ -7967,10 +8000,22 @@ c
             if(index(phaseu(i),'w').gt.0) wflag = .true.
 
             if(phase(i)(1:3).eq.'tx ' .or. used(i)(1:1).eq.' ') then
+
                if(iwl.eq.1) then
                   wflag = .true.
                else 
-                  if(dabs(dtt2).lt.dabs(ttres)) wflag = .true.
+                  if(dabs(dtt2).lt.dabs(ttres)) then
+                     if(iwl.eq.2) then
+                        wflag = .true.
+                     else if(iwl.eq.3) then
+                        if(dabs(fdt).ge.dtdw ) wflag = .true.
+                     else if(iwl.eq.4) then
+                        wflag = .true.
+                        if(dabs(fdt).ge.dtdw)  wflag = .false.
+                     else if(iwl.eq.5) then
+                        if(index(phase(i),'w').gt.0) wflag=.true.
+                     endif
+                  endif
                endif
             endif
 
@@ -7979,7 +8024,7 @@ c
               trefl  = trefl2
               tttn   = tttn + fdt
               phid1  = phasw(phid1)
-              ttres  = ttobs - tttn
+              ttres  = dtt2
             endif
 
          endif
@@ -8031,12 +8076,14 @@ c
             surfm = surff
          endif
 
-         do 4191  j2 = j+1,nphass
-            if(phid .eq. phcd(j2)) then
-              j = j2 - 1
-              go to 420
-            endif
-4191     continue
+         if(useds(1:1).eq.'2' .or. useds(1:1).eq.'3') then
+            do 4191  j2 = j+1,nphass
+               if(phid .eq. phcd(j2)) then
+                 j = j2 - 1
+                 go to 420
+               endif
+4191        continue
+         endif
 
          if(imin.eq.0 ) go to 422
 
@@ -8112,7 +8159,7 @@ c    +                     imin,surf,icha,dtmin,dtnew2
 
 430   continue
 
-      if(useds(1:1).eq.'T') then
+      if(useds(1:1).eq.'T' .or. useds(1:1).eq.'2') then
          stmean  = stmean + ttres
          strmean = strmean + dabs(ttres)
          rms     = rms    + q2(ttres)
@@ -8180,7 +8227,7 @@ c    +         fac,emeran(i)
      +          tt2(i),ttu(i),emeran(i)
       endif
 
-      if(useds(1:1).eq.'t') useds(1:1) = ' '
+      if(useds(1:1).eq.'t' .or. useds(1:1).eq.'3') useds(1:1) = ' '
 
       if(dpa.lt.0.d0 .or.phid1(1:4).eq.'P3KP') then
          azires = alpha1(azi(i) - alpha2(baz(iev(i))-180.d0))
@@ -8236,10 +8283,14 @@ c    +         fac,emeran(i)
         statw = chgcas(1:5)
       endif
 
-433   write(text(i),'(a5,f8.3,f7.2,1x,a8,8x,2i3.2,f7.3,f8.3,
+433   continue
+      ttres0 = rdig(ttres,3) 
+      azires0 = rdig(azires,2) 
+      pares0 = rdig(pares,2) 
+      write(text(i),'(a5,f8.3,f7.2,1x,a8,8x,2i3.2,f7.3,f8.3,
      +                f7.2,f8.2,f6.2,f7.2,1x,a5,a1)') 
      +                statw,rdel,razi,phase(i),hh,mi,sec,
-     +                ttres,azi(i),azires,p(i),pares,useds(1:5),cmod
+     +                ttres0,azi(i),azires0,p(i),pares0,useds(1:5),cmod
       
       if(kmout) write(text(i)(6:13),'(f8.2)') rdelk
 
@@ -8302,16 +8353,24 @@ c    +         fac,emeran(i)
          write (text(i)(115:121),'(1x,f6.3)') period(i)
       endif
 
-      onscha = '_'
-      if(phase_type(phase(i)).eq.'P') then
-         if(ttu(i).le.sisfe) onscha = 'e'
-         if(ttu(i).le.sisfi) onscha = 'i'
-      else if(phid1.ne.'LR'.and.phid1.ne.'LQ' .and. phid1.ne.'L ') then
-         if(ttu(i).le.sisfe*2.d0) onscha = 'e'
-         if(ttu(i).le.sisfi*2.d0) onscha = 'i'
+      onscha = onflag(i)(3:3)
+
+      if(unc_out .and. useds(1:1).ne.' ' .or. useds(4:4).ne.' ') then
+         onscha = '_'
+         if(phase_type(phase(i)).eq.'P') then
+            if(ttu(i).le.sisfo) onscha = 'Q'
+            if(ttu(i).le.sisfe) onscha = 'E'
+            if(ttu(i).le.sisfi) onscha = 'I'
+         else if(phid1.ne.'LR'.and.phid1.ne.'LQ' .and. phid1.ne.'L ')
+     +           then
+            if(ttu(i).le.sisfo*2.d0) onscha = 'Q'
+            if(ttu(i).le.sisfe*2.d0) onscha = 'E'
+            if(ttu(i).le.sisfi*2.d0) onscha = 'I'
+         endif
+         onflag(i)(3:3) = onscha
       endif
 
-      text(i)(131:131) = onscha
+      text(i)(131:131) = onflag(i)(3:3)
 
       istmag(i) = 0
 
@@ -8680,30 +8739,37 @@ c        print *,'Earth radius in source region: ',radsource
         call json_end_group(json_rc)
       endif
 
-
 c
 c     We will now calculate the maximum azimuthal gaps for 
 c        - all as defining used observations
+c
+c     or
+c
 c        - all observations
 c
-c     If possible, also the secondary azimuthal gap is calculated
+c     If possible, also the secondary azimuthal gap is calculated and
+c     the CPQ parameter.
 c
 
       dazgap = 360.
       dazgap2 = 360.
+
+      cpq  = 0.d0
+      cpq2 = 0.d0
+
       if(nstat.gt.1) then
 
          if(.not.gapobs) then
 
            call indexx(nobs,epiaz,indx)
            call azigap(epiaz,dazgap,d1azi,d2azi,dazgap2,d1azi2,
-     +                 d2azi2,nobs,indx)
+     +                 d2azi2,cpq,cpq2,nobs,indx,mread)
 
          else
 
            call indexx(nobs,epiaz2,indx)
            call azigap(epiaz2,dazgap,d1azi,d2azi,dazgap2,d1azi2,
-     +                 d2azi2,nobs,indx)
+     +                 d2azi2,cpq,cpq2,nobs,indx,mread)
 
          endif
 
@@ -8800,6 +8866,10 @@ c       write(12,'(a)') cdum
         rmsisf = rms
         if(lrmsisc) rmsisf = rmsisc
 
+        cduma = ' '
+        if(lpick) cduma = 'a'
+        cdumi = 'i'
+        cdum3 = '  '
         cdum = ' '
         rdum = REAL(ISF_NULL)
 
@@ -8808,8 +8878,8 @@ c       write(12,'(a)') cdum
            itest = write_origin(12,yy,mon,dd,hh,mi,isec,msec,cdum,
      +     real(var2(1)),real(rmsisf),real(elatmg),real(elonm),cdum,
      +     relmax,relmin,ieazi,real(zo),cdum,
-     +     real(var2(4)),in,nstata,nint(dazgap),rdmi,rdma,cdum,cdum,
-     +     cdum,author,corid)
+     +     real(var2(4)),in,nstata,nint(dazgap),rdmi,rdma,cduma,cdumi,
+     +     cdum3,author,corid)
  
            if(itest.eq.20) then
               itest = write_isf_error(typctl)
@@ -8821,8 +8891,8 @@ c       write(12,'(a)') cdum
            itest = write_origin(12,yy,mon,dd,hh,mi,isec,msec,cdum,
      +     real(var2(1)),real(rmsisf),real(elatmg),real(elonm),cdum,
      +     relmax,relmin,ieazi,real(zo),cfi,rdum,
-     +     in,nstata,nint(dazgap),rdmi,rdma,cdum,cdum,
-     +     cdum,author,corid)
+     +     in,nstata,nint(dazgap),rdmi,rdma,cduma,cdumi,
+     +     cdum3,author,corid)
 
            if(itest.eq.20) then
               itest = write_isf_error(typctl)
@@ -8872,8 +8942,18 @@ c       write(12,'(a)') cdum
            itest = write_isf_error(typctl)
         endif
 
-        if(stcorfl .and. istcor.gt.0) 
-     +     itest = write_comment(12,trim(textouts))
+        write(outputisf,'(''CPQ:'',f6.3)') cpq
+        itest = write_comment(12,trim(outputisf))
+        if(itest.eq.20) then
+           itest = write_isf_error(typctl)
+        endif
+
+        if(stcorfl .and. istcor.gt.0) then
+           itest = write_comment(12,trim(textouts))
+           if(itest.eq.20) then
+              itest = write_isf_error(typctl)
+           endif
+        endif
 
         if(diffflag .and. ndt.gt.0) then
           if(ndt.eq.1) then
@@ -9143,6 +9223,8 @@ c       write(12,'(a)') cdum
 
       write (11,'(a/)') trim(texth)
 
+      cdum = ' '
+
       if(isf_out .and. (imsm.gt.0 .or. imbm.gt.0 .or. imlm.gt.0)) then
 
         itest = write_netmag_head(12)
@@ -9235,7 +9317,7 @@ c        print *,i,touse(i),' , ',useds,text(i)
             endif
 
             if(arid(i).ne.'        ') then
-               write(string(106:114),'(1x,a8)') arid(ii)
+               write(string(106:114),'(1x,a8)') arid(i)
             endif
 
             if((dabs(tt2(i)-tts(i)).gt.0.001d0) .and. itresw.eq.1) then
@@ -9272,9 +9354,10 @@ c        print *,i,touse(i),' , ',useds,text(i)
         if(textout(1:5).ne.'     ') then
 
            if(output) write(11,'(a)') textout(1:lenons)
-           if(isf_out) call isf_out_line(12,textout,comm2(indx2(j)))
+           if(isf_out) call isf_out_line(12,onflag(indx2(j)),textout,
+     +        comm2(indx2(j)))
            if(json_out) call json_out_line(textout,comm2(indx2(j)),
-     +        tt3(indx2(j)),json_rc)
+     +        tt3(indx2(j)),onflag(indx(i)),json_rc)
 
         endif
 452     continue
@@ -9285,9 +9368,10 @@ c        print *,i,touse(i),' , ',useds,text(i)
              if(textout(1:5).ne.'     ') then
 
               if(output) write(11,'(a)') textout(1:lenons)
-              if(isf_out) call isf_out_line(12,textout,comment(indx(i)))
+              if(isf_out) call isf_out_line(12,onflag(indx(i)),textout,
+     +           comment(indx(i)))
               if(json_out) call json_out_line(textout,comment(indx(i)),
-     +           timemin+tt(indx(i)),json_rc)
+     +           timemin+tt(indx(i)),onflag(indx(i)),json_rc)
 
              endif
            endif
@@ -9311,6 +9395,8 @@ c        print *,i,touse(i),' , ',useds,text(i)
 453   continue
       
 455   continue
+
+      if(new_in) close(31)
 
       if(json_out) call json_end_group(json_rc)
 
@@ -9385,6 +9471,9 @@ c
             endif
 
             if(dabs(dtres).lt.1000.d0) then
+
+               dtres = rdig(dtres,3)
+
                if(kmout) then
                   write(text(i2),'(a5,f8.2,1x,a16,f9.3,f8.3)') 
      +                  statw,delk(iev(i)),art,dtobs,dtres
@@ -9431,134 +9520,148 @@ c
       endif
 
       miteras = miteras + iter
+
       if(output) then
-         if(miteras.gt.iter) then
+
+        if(miteras.gt.iter) then
             write(11,'(/''Total number of iterations: '',i5)') miteras
-         endif
-      endif
+        endif
 
-      if(nstat.gt.1) then
-       if(output) then
-         if(.not.gapobs) then
-              write(11,'(/''Maximum azimuthal gap of defining '',
-     +        ''observations: '',f5.1,'' -> '',f5.1,'' [deg]'',
-     +        '' = '',f5.1,'' [deg]'')') d1azi,d2azi,dazgap
-         else
-              write(11,'(/''Maximum azimuthal gap for all '',
-     +        ''observing stations: '',f5.1,'' -> '',f5.1,'' [deg]'',
-     +        '' = '',f5.1,'' [deg]'')') d1azi,d2azi,dazgap
-         endif
-       endif
-
-       if(json_out) 
-     +   call json_add_double("max_azimuthal_gap",dble(dazgap), json_rc)
-
-      endif
-
-      if(nstat.gt.2) then
-       if(output) then
-          if(.not.gapobs) then
-               write(11,'(/''Maximum secondary azimuthal gap of '',
-     +         ''defining observations: '',f5.1,'' -> '',f5.1,
-     +         '' [deg] = '',f5.1,'' [deg]'')') d1azi2,d2azi2,dazgap2
-          else
-               write(11,'(/''Maximum secondary azimuthal gap for '',
-     +         ''all observing stations: '',f5.1,'' -> '',f5.1,
-     +         '' [deg] = '',f5.1,'' [deg]'')') d1azi2,d2azi2,dazgap2
+        if(nstat.gt.1) then
+           if(.not.gapobs) then
+             write(11,'(/''Maximum azimuthal gap of defining '',
+     +        ''observations: '',f5.1,'' -> '',f5.1,'' [deg] = '',
+     +        f5.1,'' [deg]; CPQ ='',f7.3)') d1azi,d2azi,dazgap,cpq
+             if(json_out)  then
+               call json_add_double("max_azimuthal_gap of defing data",
+     +             dble(dazgap), json_rc)
+               call json_add_double("CPQ",cpq, json_rc)
+             endif
+           else
+             write(11,'(/''Maximum azimuthal gap for all '',
+     +        ''observing stations: '',f5.1,'' -> '',f5.1,'' [deg] = '',
+     +        f5.1,'' [deg]; CPQ ='',f7.3)') d1azi,d2azi,dazgap,cpq
+             if(json_out)  then
+               call json_add_double("max_azimuthal_gap of all data",
+     +              dble(dazgap), json_rc)
+               call json_add_double("CPQ",cpq, json_rc)
+             endif
           endif
-       endif
+        endif
 
-       if(json_out) 
-     +  call json_add_double("max_secondary_azimuthal_gap",
-     +       dble(dazgap2), json_rc)
-
-      endif
-
+        if(nstat.gt.2) then
+          if(.not.gapobs) then
+             write(11,'(/''Maximum secondary azimuthal gap of '',
+     +         ''defining observations: '',f5.1,'' -> '',f5.1,
+     +         '' [deg] = '',f5.1,'' [deg]; CPQ ='',f7.3)') d1azi2,
+     +         d2azi2,dazgap2,cpq2
+             if(json_out)  then
+               call json_add_double(
+     +           "max_secondary_azimuthal_gap of defining data",
+     +            dble(dazgap2), json_rc)
+               call json_add_double("CPQ2",cpq2, json_rc)
+             endif
+          else
+             write(11,'(/''Maximum secondary azimuthal gap for '',
+     +         ''all observing stations: '',f5.1,'' -> '',f5.1,
+     +         '' [deg] = '',f5.1,'' [deg]; CPQ ='',f7.3)') d1azi2,
+     +         d2azi2,dazgap2,cpq2
+             if(json_out)  then
+               call json_add_double(
+     +           "max_secondary_azimuthal_gap of all data",
+     +           dble(dazgap2), json_rc)
+               call json_add_double("CPQ2",cpq2, json_rc)
+             endif
+          endif
+        endif
 c
 c     output of mean residuals
 c
-      if(output) then
-         write(11,'(/''Residuals of defining data'',10x,
-     +               ''RMS     MEAN-RES       MEAN'')')
+        write(11,'(/''Residuals of defining data'',10x,
+     +              ''RMS     MEAN-RES       MEAN'')')
 
-         if(nobst.eq.1) 
-     +   write(11,'(i6,'' onset time              : '',f8.3,x,2(3x,
-     +         f8.3),''  [s]'')') nobst,rms,strmean,stmean
+        stmean0 = rdig(stmean,3) 
+        if(nobst.eq.1) 
+     +  write(11,'(i6,'' onset time              : '',f8.3,x,2(3x,
+     +        f8.3),''  [s]'')') nobst,rms,strmean,stmean0
 
-         if(nobst.gt.1) 
-     +   write(11,'(i6,'' onset times             : '',f8.3,x,2(3x,
-     +         f8.3),''  [s]'')') nobst,rms,strmean,stmean
+        if(nobst.gt.1) 
+     +  write(11,'(i6,'' onset times             : '',f8.3,x,2(3x,
+     +        f8.3),''  [s]'')') nobst,rms,strmean,stmean0
 
-         if(nobsa.eq.1) 
-     +   write(11,'(i6,'' backazimuth value       : '',f8.3,x,2(3x,
-     +         f8.3),''  [deg]'')') nobsa,rmsazi,sarmean,samean
+        samean0 = rdig(samean,3) 
+        if(nobsa.eq.1) 
+     +  write(11,'(i6,'' backazimuth value       : '',f8.3,x,2(3x,
+     +        f8.3),''  [deg]'')') nobsa,rmsazi,sarmean,samean0
 
-         if(nobsa.gt.1) 
-     +   write(11,'(i6,'' backazimuth values      : '',f8.3,x,2(3x,
-     +         f8.3),''  [deg]'')') nobsa,rmsazi,sarmean,samean
+        if(nobsa.gt.1) 
+     +  write(11,'(i6,'' backazimuth values      : '',f8.3,x,2(3x,
+     +        f8.3),''  [deg]'')') nobsa,rmsazi,sarmean,samean0
 
-         if(nobsp.eq.1)
-     +   write(11,'(i6,'' ray parameter           : '',f8.3,x,2(3x,
-     +         f8.3),''  [s/deg]'')') nobsp,rmsp,sprmean,spmean
+        spmean0 = rdig(spmean,3) 
+        if(nobsp.eq.1)
+     +  write(11,'(i6,'' ray parameter           : '',f8.3,x,2(3x,
+     +        f8.3),''  [s/deg]'')') nobsp,rmsp,sprmean,spmean0
 
-         if(nobsp.gt.1)
-     +   write(11,'(i6,'' ray parameters          : '',f8.3,x,2(3x,
-     +         f8.3),''  [s/deg]'')') nobsp,rmsp,sprmean,spmean
+        if(nobsp.gt.1)
+     +  write(11,'(i6,'' ray parameters          : '',f8.3,x,2(3x,
+     +        f8.3),''  [s/deg]'')') nobsp,rmsp,sprmean,spmean0
 
-         if(ndmisf.eq.1) 
-     +   write(11,'(i6,'' travel-time difference  : '',f8.3,x,2(3x,
-     +         f8.3),''  [s]'')') ndmisf,rmsdt,sdrmean,sdmean
+        sdmean0 = rdig(sdmean,3) 
+        if(ndmisf.eq.1) 
+     +  write(11,'(i6,'' travel-time difference  : '',f8.3,x,2(3x,
+     +        f8.3),''  [s]'')') ndmisf,rmsdt,sdrmean,sdmean0
 
-         if(ndmisf.gt.1) 
-     +   write(11,'(i6,'' travel-time differences : '',f8.3,x,2(3x,
-     +         f8.3),''  [s]'')') ndmisf,rmsdt,sdrmean,sdmean
+        if(ndmisf.gt.1) 
+     +  write(11,'(i6,'' travel-time differences : '',f8.3,x,2(3x,
+     +        f8.3),''  [s]'')') ndmisf,rmsdt,sdrmean,sdmean0
 
-         write(11,'(/''Weighted RMS of onset times (ISC type): '',
-     +              f8.3,'' [s]''/)') rmsisc
+        write(11,'(/''Weighted RMS of onset times (ISC type): '',
+     +             f8.3,'' [s]''/)') rmsisc
 
-         write(11,'(''Weighted misfit of input data'',9x,
-     +              ''L1      L2'')')
+        write(11,'(''Weighted misfit of input data'',9x,
+     +             ''L1      L2'')')
 
-         if(ntmisf.ge.1) then
+        if(ntmisf.ge.1) then
            tmisf1 = dsqrt(tmisf/ntmisf)
            tmisfl1 = tmisfl/ntmisf
 c          PRINT *,'tmisf tmisfl ntmisf tmisf1 tmisfl1'
 c          PRINT *,tmisf,tmisfl,ntmisf,tmisf1,tmisfl1 
            write(11,'(i6,'' onset times             :'',2(x,f8.3))')
      +     ntmisf,tmisfl1,tmisf1
-         endif
+        endif
 
-         if(namisf.ge.1) then
+        if(namisf.ge.1) then
            amisf1 = dsqrt(amisf/namisf)
            amisfl1 = amisfl/namisf
            write(11,'(i6,'' backazimuth values      :'',2(x,f8.3))')
      +     namisf,amisfl1,amisf1
-         endif
+        endif
 
-         if(npmisf.ge.1) then
+        if(npmisf.ge.1) then
            pmisf1 = dsqrt(pmisf/npmisf)
            pmisfl1 = pmisfl/npmisf
            write(11,'(i6,'' ray parameters          :'',2(x,f8.3))')
      +     npmisf,pmisfl1,pmisf1
-         endif
+        endif
 
-         if(ndmisf.ge.1) then
+        if(ndmisf.ge.1) then
            dmisf1 = dsqrt(dmisf/ndmisf)
            dmisfl1 = dmisfl/ndmisf
            write(11,'(i6,'' travel-time differences :'',2(x,f8.3))')
      +     ndmisf,dmisfl1,dmisf1
-         endif
+        endif
 
-         nwmisf = ntmisf + namisf + npmisf + ndmisf
-         wmisf = dsqrt((tmisf + amisf + pmisf + dmisf)/nwmisf)
-         wmisfl = (tmisfl + amisfl + pmisfl + dmisfl)/nwmisf
-         write(11,'(i6,'' misfit over all         :'',2(x,f8.3))')
-     +   nwmisf,wmisfl,wmisf
+        nwmisf = ntmisf + namisf + npmisf + ndmisf
+        wmisf = dsqrt((tmisf + amisf + pmisf + dmisf)/nwmisf)
+        wmisfl = (tmisfl + amisfl + pmisfl + dmisfl)/nwmisf
+        write(11,'(i6,'' misfit over all         :'',2(x,f8.3))')
+     +  nwmisf,wmisfl,wmisf
 
-c        qp = dble(in*nobst) /
-c    +        (dble(nwmisf)*rms * var2(1)*wmisfl*earea*dazgap2)
-c        if(czo.eq.'D') qp = qp * zo *4.d0 / (3.d0 *var2(4))
-c        write(11,'(/''Quality: '',e15.10/)') qp
+c       qp = dble(in*nobst) /
+c    +       (dble(nwmisf)*rms * var2(1)*wmisfl*earea*dazgap2)
+c       if(czo.eq.'D') qp = qp * zo *4.d0 / (3.d0 *var2(4))
+c       write(11,'(/''Quality: '',e15.10/)') qp
 
       endif
 
@@ -9642,6 +9745,7 @@ c
      +      ''VPVS'',3x,''DLAT'',5x,''DLON'',6x,''DZ'',7x,''DT0'',4x,
      +      ''DVPVS DEF'',4x,''RMS'' )' )
       endif
+
       if(typctl.ge.0) then
          write(*,'(/''T0'',25x,''LAT'',6x,''LON'',7x,''Z'',5x,
      +      ''VPVS'',3x,''DLAT'',5x,''DLON'',6x,''DZ'',7x,''DT0'',4x,
@@ -9665,6 +9769,7 @@ c
          call json_add_double("dlon", var2(3), json_rc)
          call json_add_double("z", zo, json_rc)
       endif
+
       if(czo.eq.'D') then
 
         if(output) then
@@ -9721,8 +9826,6 @@ c
          write(12,'(/,''STOP'')')
          close(12)
       endif
-
-      if(new_in) close(31)
 
       if(ref_eve .and. output) then
 
