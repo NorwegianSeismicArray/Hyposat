@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2      ' )
-c     parameter (vdate=' ( 1 April 2025)' )
+c     parameter (vdate=' ( 14 April 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 1 April 2025
+c     last changes: 14 April 2025
 c
 c----------------------------------------------------------------------
 c
@@ -1863,12 +1863,12 @@ c
            
            if(trim(isf_file).eq.'ISF') then
               if(trim(outputfile).eq.'hyposat-out') then
-                 isf_file = 'hyposat-isf'
+                 isf_file = 'hyposat-out.isf'
               else
-                 isf_file = trim(outputfile) // '_isf'
+                 isf_file = trim(outputfile) // '.isf'
               endif
            else
-              isf_file = trim(isf_file) // '_isf'
+              isf_file = trim(isf_file)
            endif
 
         else
