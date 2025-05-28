@@ -11,7 +11,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      +          magind*1,picktype*1,dumph*8
       real*4 dist,esaz,timeres,azim,azimres,slow,slowres,snr,amp,per,mag
       integer hh,mi,ss,msec
-      integer write_phase, itest
+      integer write_phase, itest, write_isf_error
 
       integer ISF_NULL
       parameter (ISF_NULL=9999999)

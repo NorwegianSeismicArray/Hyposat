@@ -1,13 +1,10 @@
-  hyposat-parameter
+*  hyposat-parameter.regional
 
-*GLOBAL MODEL 2                     : iasp91_A
 GLOBAL MODEL                       : ak135_A
 
-LOCAL OR REGIONAL MODEL            : _
-PHASE INDEX FOR LOCAL MODEL        : 0000
 CRUST 1.0                          : 4
 
-OUTPUT OF REGIONAL MODEL (DEF 0)   : 1
+OUTPUT OF REGIONAL MODEL           : 1
 
 STATION FILE                       : ../data/stations.dat
 STATION CORRECTION FILE            : _
@@ -15,50 +12,49 @@ STATION CORRECTION FILE            : _
 P-VELOCITY TO CORRECT ELEVATION    : 4.5 
 S-VELOCITY TO CORRECT ELEVATION    : 0.
 
-RG GROUP-VELOCITY (DEF 2.5  [km/s]): 2.5
-LG GROUP-VELOCITY (DEF 3.5  [km/s]): 3.5752 
+RG GROUP-VELOCITY                  : 2.5
+LG GROUP-VELOCITY                  : 3.5752 
 
-LQ GROUP-VELOCITY (DEF 4.4  [km/s]):  4.4
-LR GROUP-VELOCITY (DEF 3.95 [km/s]): 2.85
+LQ GROUP-VELOCITY                  : 4.4
+LR GROUP-VELOCITY                  : 2.85
 
-STARTING SOURCE TIME (EPOCHAL TIME): 0.
-STARTING TIME ERROR       [s]      : 0. 
+STARTING SOURCE TIME               : 0.
+STARTING TIME UNCERTAINTY          : 0. 
 
-STARTING SOURCE DEPTH     [km]     : 1. 
-STARTING DEPTH ERROR      [km]     : 50. 
-DEPTH FLAG (f,b,d,F,B,D)           : b 
+STARTING SOURCE DEPTH              : 1. 
+STARTING DEPTH ERROR               : 50. 
+DEPTH FLAG                         : b 
 
-STARTING SOURCE LATITUDE  [deg]    : 999. 
-STARTING LATITUDE ERROR   [deg]    : 10. 
+STARTING SOURCE LATITUDE           : 999. 
+STARTING LATITUDE UNCERATINTY      : 10. 
 
-STARTING SOURCE LONGITUDE [deg]    : 999. 
-STARTING LONGITUDE ERROR  [deg]    : 10. 
+STARTING SOURCE LONGITUDE          : 999. 
+STARTING LONGITUDE UNCERATINTY     : 10. 
 
-MAGNITUDE CALCULATION (DEF 0)      : 1
-P-ATTENUATION MODEL (G-R or V-C)   : V-C
-MS-ATTENUATION MODEL (IASPEI / R-P): R-P
+MAGNITUDE CALCULATION              : 1
+P-ATTENUATION MODEL                : V-C
+MS-ATTENUATION MODEL               : R-P
 
 MAXIMUM # OF ITERATIONS            : 80 
-# TO SEARCH OSCILLATIONS (DEF 4)   : 6
+ITERATIONS TO SEARCH OSCILLATIONS  : 6
 
-LOCATION ACCURACY [km] (DEFAULT 1) : 1.
-CONSTRAIN SOLUTION (0/1)           : 1
+LOCATION ACCURACY                  : 1.
+CONSTRAIN SOLUTION                 : 1
 
-CONFIDENCE LEVEL  (68.3 - 99.99 %) : 95.
-EPICENTER ERROR ELLIPSE (DEF 1)    : 1
+CONFIDENCE LEVEL                   : 95.
+EPICENTER UNCERTAINTY ELLIPSE      : 1
 
-MAXIMUM BAZ ERROR         [deg]    : 30. 
-MAXIMUM SLOWNESS ERROR    [s/deg]  : 5.
+MAXIMUM BAZ RESIDUAL               : 30. 
+MAXIMUM SLOWNESS RESIDUAL          : 5.
 
-SLOWNESS [S/DEG] ( 0 = APP. VEL)   : 0 
+SLOWNESS [S/DEG]                   : 0 
 
 FLAG USING TRAVEL-TIME DIFFERENCES : 1
 
-INPUT FILE NAME (DEF hyposat-in)   : _
-HYPOSAT-IN OLD SYNTAX        (0/1) : 1
+INPUT FILE NAME                    : _
 
 FLAG EMERGENCE ANGLE OUTPUT        : 1
 
-OUTPUT FILE NAME (DEF hyposat-out) : _
-OUTPUT SWITCH  (YES = 1, DEFAULT)  : 1
+OUTPUT FILE NAME                   : _
+OUTPUT SWITCH                      : 1
 OUTPUT LEVEL                       : 4 

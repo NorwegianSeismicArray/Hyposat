@@ -1,5 +1,7 @@
 GERESS 1996-205:04.08
-GERES Pn       1996 07 23 04 10 25.4   0.5   242.4   5.   13.4   1.00
+*23456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 
+*aaaa aaaaaaaa iiii ii ii ii ii ff.fff f.fff fff.ff ff.ff ff.ff ff.ff aaaaaaa ff.fff fffffffff.ff ffff.ff aaaaaaaa ff.ff
+GERES Pn       1996 07 23 04 10 25.4   0.5   242.4   5.   13.4   1.00 TASD___
 *
 *GERES Sg       1996 07 23 04 12 02.9   1.0   244.1  10.   33.7   2.00
 * note that for the following onset some time related values were not set

@@ -30,8 +30,6 @@ if ( $UNIXVERS != 'Linux' ) then
 	exit
 endif
 
-setenv M "l"
-
 #
 #  start of FORTRAN compiler specific lines
 #

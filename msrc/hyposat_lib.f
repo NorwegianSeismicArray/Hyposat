@@ -114,16 +114,15 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       FUNCTION UPPCAS(WORD)
       character*(*) word
-      character*40 uppcas,tword
+      character*1024 uppcas,tword
       integer lent
 
       lent = len(word) 
-      if(lent.gt.40) then
+      if(lent.gt.1024) then
          print *,' UPPCAS input too long ',word
          STOP
       endif
       uppcas = ' '
-      tword  = ' '
       tword  = word(1:lent)
       do 100 i=1,lent
       ii= ichar(tword(i:i))
@@ -138,16 +137,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION LOWCAS(WORD)
       character*(*) word
-      character*40 lowcas,tword
+      character*1024 lowcas,tword
       integer lent
 
       lent = len(word)
-      if(lent.gt.40) then
+      if(lent.gt.1024) then
          print *,' LOWCAS input too long ',word
          STOP
       endif
       lowcas = ' '
-      tword  = ' '
       tword  = word(1:lent)
       do 100 i=1,lent
       ii= ichar(tword(i:i))

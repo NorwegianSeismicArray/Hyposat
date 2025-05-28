@@ -794,7 +794,7 @@ c     internal
 
       real*4 dmazi
 
-      real*8 daz, daz2, deg2rad, pi2
+      real*8 daz, deg2rad, pi2
 
       integer i,j,k
 
@@ -942,7 +942,7 @@ c
 c     set to 0. in the case of numerical errors
 c
       if(cpq.lt.0.d0) cpq = 0.d0
-      if(cpq2.lt.0.d0) cpq = 0.d0
+      if(cpq2.lt.0.d0) cpq2 = 0.d0
 
       return
       end

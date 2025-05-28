@@ -26,6 +26,8 @@ c                 in the case of a water layer at the reflection point;
 c
 c     June 2021: ddelta (change in epicentral distance) also as output
 c
+c     April 2025: small adaptions in parallel to changes in hyposat_loc.f
+c
 c     input:
 c 
 c             pa0     = ray parameter in [s/deg]
@@ -122,7 +124,7 @@ c
 
       include 'model.h'
 
-      dimension v0s(2,maxla),zs(maxla)
+      dimension v0s(2,maxla),zs(maxla), ndisc(maxla)
 
       DIMENSION h(maxla),del(2),time(2),V(maxla),G(maxla),V2(maxla)
 
@@ -336,21 +338,24 @@ c
       I2=I+1
       V2(I)=V(I2)
 
+      ndisc(i) = 0
+
       IF(dabs(V2(I)-V(I)) .le. 0.001d0) THEN
-         V2(I)=1.0001d0*V(I)
+         V2(I)=1.000001d0*V(I)
          V(I2)=V2(I)
       ENDIF
 
       zdiff=H(I2)-H(I)
       IF(dabs(zdiff).le.0.0001d0)  then
-          zdiff=0.0001d0
-          H(i2)= H(i2) + zdiff
+          zdiff=1.d-6*H(i)
+          H(i2)= H(i) + zdiff
+          ndisc(i) = 1
       endif
 
       G(I)=(V2(I)-V(I))/zdiff
   
-c     print *,i,H(I),V(I),H(i2),V2(I)
-c     print *,i,H(I),V(I)
+c     print *,i,H(I),V(I),H(i2),V2(I), ndisc(i)
+c     print *,i,H(I),V(I), ndisc(i)
 
 800   continue
 
@@ -372,6 +377,8 @@ c    +          cortyp, ' Z0 is above possible ray coverage'
       endif
 
       DO  1100  KK=istart,M
+
+      if(ndisc(kk).ne.0) goto 1100
 
       E=V(KK)
       G1=(1.d0 - E*E*RV2)

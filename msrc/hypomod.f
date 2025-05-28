@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20
       parameter (version='HYPOMOD Version 2.2     ')
-c     parameter (vdate=' ( 1 April 2025)' )
+c     parameter (vdate=' ( 27 May 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes:  1 April 2025
+c     last changes:  27 May 2025
 c
 c----------------------------------------------------------------------
 c
@@ -79,8 +79,8 @@ c
       real*8           alpha1, alpha2, convlat, dirdel, q2, 
      +                 radloc, rdig
       character        phase_type*1, file_check*512, file_checkpara*512,
-     +                 filepara*512, lowcas*40, uppcas*40, chgcas*40,
-     +                 get_mtyp*3, phasw*8
+     +                 filepara*512, lowcas*1024, uppcas*1024, 
+     +                 chgcas*1024, get_mtyp*3, phasw*8
 
 c
 c     mstat = maximum number of stations
@@ -95,7 +95,7 @@ c
 
       character*5 sta(mstat),stat,stato,statw,stat1,stationfile*512,
      +          statcorfile*512,outputfile*512,inputfile*512,
-     +          magfile*512,magmlfile*512
+     +          magfile*512,magmlfile*512,statfile2*512
 c
 c     mread = maximum number of phases (hypomod-in file)
 c
@@ -108,8 +108,8 @@ c
 
       character phase(mread)*8,phaseu(mread)*8,phid*8,used(mread)*6,
      +          phid2*8,text2(mrd2)*160,phid1*8,phase_t*1,
-     +          string*210,touse(mread)*9,touse0*9,phidr*8,
-     +          o_string*210,textout*160,text(mread)*160,
+     +          string*550,touse(mread)*9,touse0*9,phidr*8,
+     +          o_string*550,textout*160,text(mread)*160,
      +          arid(mread)*8,statcorstr*80, texth*160,phid0*8,
      +          usedm*6,phsearch*1,
      +          useds*6, usedr*1, usedsr*1, stringt*30, onflag(mread)*3
@@ -330,7 +330,7 @@ c
       delmsmin = 0.d0
       delmsmax = 180.d0
       delmlmin = 0.d0
-      delmlmax = 180.d0
+      delmlmax = 20.d0
 
 c
 c     search file 'hyposat-parameter'
@@ -347,23 +347,23 @@ c
 c     read in steering parameters from parameter file (if found)
 c
 
-      do 1 jin = 1,1000
+      do 1 jin = 1,2000
 
       read (9,'(a)',end=2) string
 
-      icolon = index(string,':')
+      string = adjustl(string)
 
-      if(icolon.ne.0) then
-         icolon1 = icolon-1
-         chgcas = uppcas(string(1:icolon1))
-         string(1:icolon1) = chgcas(1:icolon1)
-      endif
-
-      if(string(1:1).eq.' ') go to 1
+      if(string.eq.' ') go to 1
       if(string(1:1).eq.'*') go to 1
       if(string(1:1).eq.'?') go to 1
 
-      if(icolon.eq.0) then
+      icolon = index(string,':')
+
+      if(icolon.gt.0) then
+         icolon1 = icolon-1
+         chgcas = uppcas(string(1:icolon1))
+         string(1:icolon1) = chgcas(1:icolon1)
+      else
          print *,' Wrong syntax (ignored): ',trim(string)
          go to 1
       endif
@@ -375,13 +375,10 @@ c
 
       icolon2 = icolon+2
 
-      if(string(1:14).eq.'GLOBAL MODEL  ') then
-          read (string(icolon2:),'(a)') modnam(1)
-          mtype(1) = get_mtyp(modnam(1))
-          go to 1
-      endif
-
-      if(string(1:14).eq.'GLOBAL MODEL 1') then
+      if(string(1:14).eq.'GLOBAL MODEL 1' .or.
+     +   (string(1:12).eq.'GLOBAL MODEL' .and. string(13:14).ne.' 2'
+     +    .and. string(13:14).ne.' 3' .and. string(13:14).ne.' 4')
+     +     ) then
           read (string(icolon2:),'(a)') modnam(1)
           mtype(1) = get_mtyp(modnam(1))
           go to 1
@@ -429,11 +426,6 @@ c
           go to 1
       endif
 
-      if(string(1:25).eq.'GLOBAL CRUSTAL MODEL CODE') then
-          read (string(icolon2:),'(a)') mtyp0
-          go to 1
-      endif
-
       if(string(1:23).eq.'LOCAL OR REGIONAL MODEL') then
           read (string(icolon2:),'(a)') filloc
           go to 1
@@ -451,7 +443,10 @@ c
           intinp = 0
           locsta = .false.
           read (string(icolon2:),*) intinp
-          if(intinp.eq.1) locsta = .true.
+          if(intinp.eq.1) then
+            locsta = .true.
+            locgeo = .true.
+          endif
           go to 1
       endif
 
@@ -482,6 +477,12 @@ c
       if(string(1:12).eq.'STATION FILE') then
           read (string(icolon2:),'(a)') stationfile
           stationfile = file_check(stationfile)
+          go to 1
+      endif
+
+      if(string(1:24).eq.'ALTERNATIVE STATION FILE') then
+          read (string(icolon2:),'(a)') statfile2
+          stationfile = file_check(statfile2)
           go to 1
       endif
 
@@ -1099,7 +1100,7 @@ c
       if(output) then
          open (unit=11,file=outputfile)
          write (11,'(a,/)') trim(title)
-         write (11,'(''Event solution by '',a,/)') 
+         write (11,'(''Event solution by input from '',a,/)') 
      +          trim(author)
       endif
 
@@ -1237,6 +1238,7 @@ c
       period(ii) = -999.d0
       touse0  = 'TASDRM1  '
       arid(ii)= ' '
+      onflag(ii) = '___'
 
       if(.not.isf_in) then
 
@@ -1294,11 +1296,11 @@ c
           if(lstring.ge.ipos) then
 
              if(old_syntax) then
-                read (string(ipos:ipo2),'(a6)',err=5) touse0
+                read (string(ipos:ipo2),'(a6)',err=5) touse0(1:6)
                 touse0(7:7) = touse0(6:6)
                 touse0(6:6) = 'M'
              else
-                read (string(ipos:ipo2),'(a7)',err=5) touse0
+                read (string(ipos:ipo2),'(a7)',err=5) touse0(1:7)
              endif
 
              chgcas = uppcas(touse0)
@@ -1373,6 +1375,7 @@ c
       else
 
           onscha = ' '
+          cpick = '_'
           cpol = '_'
 
           if(string(21:23).eq.' DI') string(21:23) = '_DI'
@@ -2022,6 +2025,7 @@ c
       phaseu(i) = phase(i)
       useds = used(i)
       usedm = ' '
+      usedsr = ' '
 
       if(sta(iev(i)).ne.stato) then
 
@@ -2183,6 +2187,7 @@ c
          phcd(nphas) = phid
          dddp(nphas) = 0.d0
          dpdh(nphas) = 0.d0
+         phsearch = 'L'
       endif
       nphass = nphas
       surfm = surf
@@ -2208,8 +2213,7 @@ c
       phid1 = phcd(j)
 
       phase_t = phase_type(phid1)
-      if((phsearch.eq.'P' .and. phase_t.ne.'P') .or.
-     +   (phsearch.eq.'S' .and. phase_t.ne.'S') ) go to 420
+      if(phsearch.ne.' ' .and. phsearch.ne.phase_t) go to 420
 
       dpa   = 0.d0
       dpaa  = 0.d0
@@ -2376,7 +2380,6 @@ c
          delr2  = 0.d0
          dpr    = 0.d0
          usedr = ' '
-
 
          if( .not.surff .and. (useds(5:5).eq.'R' .or.
      +       (touse(i)(5:5).eq.'R' .and. useds(5:5).eq.' ' .and. 
@@ -2590,10 +2593,22 @@ c
             if(index(phaseu(i),'w').gt.0) wflag = .true.
 
             if(phase(i)(1:3).eq.'tx ' .or. used(i)(1:1).eq.' ') then
+
                if(iwl.eq.1) then
                   wflag = .true.
-               else 
-                  if(dabs(dtt2).lt.dabs(ttres)) wflag = .true.
+               else
+                  if(dabs(dtt2).lt.dabs(ttres)) then
+                     if(iwl.eq.2) then
+                        wflag = .true.
+                     else if(iwl.eq.3) then
+                        if(dabs(fdt).ge.dtdw ) wflag = .true.
+                     else if(iwl.eq.4) then
+                        wflag = .true.
+                        if(dabs(fdt).ge.dtdw)  wflag = .false.
+                     else if(iwl.eq.5) then
+                        if(index(phase(i),'w').gt.0) wflag=.true.
+                     endif
+                  endif
                endif
             endif
 
@@ -2602,7 +2617,7 @@ c
               trefl  = trefl2
               tttn   = tttn + fdt
               phid1  = phasw(phid1)
-              ttres  = ttobs - tttn
+              ttres  = dtt2
             endif
 
          endif
@@ -2616,7 +2631,7 @@ c
             dpaa = dabs(dpa)
          endif
 
-         dtnew = dabs(tttn-tome-ttt(i))
+         dtnew = dabs(tttn-tome-ttt(i)+tom)
 
          if(typctl.gt.8) then
            print *,'phid1, i, tttn, t0, j, phase, TT, ECOR, Height,',
@@ -2628,13 +2643,19 @@ c
 
          ttres1 = dabs(ttc(j) - ttc(1))
          if(rdel.gt.113. .and. phcd(1)(1:3).eq.'Pdi' .and.
-     +                         ttres1.gt.200.d0        ) then
-           if(phcd(2)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(2))
-           if(phcd(3)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(3))
-           if(phcd(4)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(4))
+     +                         ttres1.gt.50.d0        ) then
+           if(phcd(2)(1:2).eq.'PK' .and. j.ge.2) then
+              ttres1 = dabs(ttc(j) - ttc(2))
+              go to 419
+           else if(phcd(3)(1:2).eq.'PK' .and. j.ge.3) then
+              ttres1 = dabs(ttc(j) - ttc(3))
+              go to 419
+           else if(phcd(4)(1:2).eq.'PK' .and. j.ge.4) then
+              ttres1 = dabs(ttc(j) - ttc(4))
+           endif
          endif
 
-         if(dabs(ttres).lt.dabs(dtmin)) then
+419      if(dabs(ttres).lt.dabs(dtmin)) then
             phid2 = phid1
             dtmin = ttres
             dtnew2 = dtnew
@@ -2648,12 +2669,14 @@ c
             surfm = surff
          endif
 
-         do 419  j2 = j+1,nphass
-            if(phid .eq. phcd(j2)) then
-              j = j2 - 1
-              go to 420
-            endif
-419      continue
+         if(useds(1:1).eq.'2' .or. useds(1:1).eq.'3') then
+            do 4191  j2 = j+1,nphass
+               if(phid .eq. phcd(j2)) then
+                 j = j2 - 1
+                 go to 420
+               endif
+4191        continue
+         endif
 
          if(imin.eq.0 ) go to 422
 

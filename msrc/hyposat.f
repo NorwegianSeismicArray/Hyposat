@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2      ' )
-c     parameter (vdate=' ( 14 April 2025)' )
+c     parameter (vdate=' ( 28 May 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 14 April 2025
+c     last changes: 28 May 2025
 c
 c----------------------------------------------------------------------
 c
@@ -105,8 +105,8 @@ c
      +                 rdig
      
       character        phase_type*1, file_check*512, file_checkpara*512,
-     +                 filepara*512, lowcas*40, uppcas*40, chgcas*40,
-     +                 get_mtyp*3, phasw*8
+     +                 filepara*512, lowcas*1024, uppcas*1024, 
+     +                 chgcas*1024, get_mtyp*3, phasw*8
 
 c
 c     mstat = maximum number of stations
@@ -122,7 +122,7 @@ c
       character*5 sta(mstat),stat,stato,statw,stat1,stationfile*512,
      +          statcorfile*512,outputfile*512,inputfile*512,
      +          magfile*512,magmlfile*512,outputisf*200,inputfilen*512,
-     +          json_file*512,isf_file*512
+     +          json_file*512,isf_file*512,statfile2*512
 c
 c     mread = maximum number of phases (hyposat-in file)
 c
@@ -141,8 +141,8 @@ c
 
       character phase(mread)*8,phaseu(mread)*8,phid*8,used(mread)*6,
      +          phid2*8,text2(mrd2)*160,phid1*8,phase_t*1,phidr0*8,
-     +          string*210,touse(mread)*9,touse0*9,phidr*8,phipl*8,
-     +          phai*8,phaj*8,o_string*210,textout*160,text(mread)*160,
+     +          string*550,touse(mread)*9,touse0*9,phidr*8,phipl*8,
+     +          phai*8,phaj*8,o_string*550,textout*160,text(mread)*160,
      +          arid(mread)*8,statcorstr*80, texth*160,phid0*8,
      +          comment(mread)*72,comm2(mrd2)*72,usedm*6,phsearch*1,
      +          useds*6, phcheck*8, usedr*1, usedsr*1, 
@@ -226,7 +226,6 @@ c
      +          phisf*10, isf_ref*10, phidd*10, author2*10, dformat*6,
      +          dsformat*5, corid*8, corid2*8, cpick*1, cduma*1, 
      +          cpol*1, cdumi*1
-
 
       real*4    rdum, rpa, ramp, rper, rsnr, rlati, rloni, rdepi,
      +          rdmi, rdma, rdum0, relmax, relmin
@@ -458,6 +457,7 @@ c
       filloc = '_'
       imo     = 0
       stationfile = 'stations.dat'
+      statfile2   = 'stations.dat'
       outputfile  = 'hyposat-out'
       inputfile   = 'hyposat-in'
       isf_file = 'ISF'
@@ -570,7 +570,7 @@ c
       delmsmin = 0.d0
       delmsmax = 180.d0
       delmlmin = 0.d0
-      delmlmax = 180.d0
+      delmlmax = 20.d0
 
       magtypp  = 'G-R'
       magtyps  = 'IASPEI'
@@ -595,23 +595,23 @@ c
 c     read in steering parameters from parameter file (if found)
 c
 
-      do 1 jin = 1,1000
+      do 1 jin = 1,2000
 
       read (9,'(a)',end=2) string
 
-      icolon = index(string,':')
+      string = adjustl(string)
 
-      if(icolon.ne.0) then
-         icolon1 = icolon-1
-         chgcas = uppcas(string(1:icolon1))
-         string(1:icolon1) = chgcas(1:icolon1)
-      endif
-
-      if(string(1:1).eq.' ') go to 1
+      if(string.eq.' ') go to 1
       if(string(1:1).eq.'*') go to 1
       if(string(1:1).eq.'?') go to 1
 
-      if(icolon.eq.0) then
+      icolon = index(string,':')
+
+      if(icolon.gt.0) then
+         icolon1 = icolon-1
+         chgcas = uppcas(string(1:icolon1))
+         string(1:icolon1) = chgcas(1:icolon1)
+      else 
          print *,' Wrong syntax (ignored): ',trim(string)
          go to 1
       endif
@@ -623,7 +623,10 @@ c
 
       icolon2 = icolon+2
 
-      if(string(1:14).eq.'GLOBAL MODEL 1') then
+      if(string(1:14).eq.'GLOBAL MODEL 1' .or.
+     +   (string(1:12).eq.'GLOBAL MODEL' .and. string(13:14).ne.' 2'
+     +    .and. string(13:14).ne.' 3' .and. string(13:14).ne.' 4')
+     +     ) then
           read (string(icolon2:),'(a)') modnam(1)
           mtype(1) = get_mtyp(modnam(1))
           go to 1
@@ -671,12 +674,6 @@ c
           go to 1
       endif
 
-      if(string(1:12).eq.'GLOBAL MODEL') then
-          read (string(icolon2:),'(a)') modnam(1)
-          mtype(1) = get_mtyp(modnam(1))
-          go to 1
-      endif
-
       if(string(1:25).eq.'GLOBAL CRUSTAL MODEL CODE') then
           read (string(icolon2:),'(a)') mtyp0
           go to 1
@@ -699,7 +696,10 @@ c
           intinp = 0
           locsta = .false.
           read (string(icolon2:),*) intinp
-          if(intinp.eq.1) locsta = .true.
+          if(intinp.eq.1) then
+             locsta = .true.
+             locgeo = .true.
+          endif
           go to 1
       endif
 
@@ -721,11 +721,14 @@ c
           c1typ = 'mc'
           read (string(icolon2:),'(a)') c1type
           chgcas = lowcas(c1type)
-          if(chgcas.eq.'uc' .or. chgcas.eq.'mc' .or.
-     +       chgcas.eq.'lc' .or. chgcas.eq.'mo' ) c1typ = chgcas(1:2)
+          if(chgcas(1:2).eq.'uc' .or. chgcas(1:2).eq.'mc' .or.
+     +       chgcas(1:2).eq.'lc' .or. chgcas(1:2).eq.'mo' ) 
+     +       c1typ = chgcas(1:2)
           go to 1
       endif
           
+      if(string(1:14).eq.'CRUST 1.0 PATH') go to 1
+
       if(string(1:9).eq.'CRUST 1.0') then
           read (string(icolon2:),*) imo
           if(imo.lt.0) imo = 0
@@ -739,6 +742,12 @@ c
       if(string(1:12).eq.'STATION FILE') then
           read (string(icolon2:),'(a)') stationfile
           stationfile = file_check(stationfile)
+          go to 1
+      endif
+
+      if(string(1:24).eq.'ALTERNATIVE STATION FILE') then
+          read (string(icolon2:),'(a)') statfile2
+          statfile2 = file_check(statfile2)
           go to 1
       endif
 
@@ -1159,7 +1168,7 @@ c
           go to 1
       endif
 
-      if(string(1:18).eq.'CONSTRAIN SOLUTION') then
+      if(string(1:18).eq.'CONSTRAIN SOLUTION' .and. .not.fixinp) then
           intinp = 0
           read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
@@ -1273,14 +1282,16 @@ c
           go to 1
       endif
 
-      if(string(1:26).eq.'MAX T RES FOR BAZ OF B USE' .or.
-     +   string(1:26).eq.'MAX T RES FOR AZI OF B USE') then
+      if((string(1:26).eq.'MAX T RES FOR BAZ OF B USE' .or.
+     +   string(1:26).eq.'MAX T RES FOR AZI OF B USE' ) .and.
+     +   .not.aziall) then
           read (string(icolon2:),*) dtmaxazib 
           go to 1
       endif
 
-      if(string(1:26).eq.'MAX T RES FOR BAZ OF L USE' .or.
-     +   string(1:26).eq.'MAX T RES FOR AZI OF L USE') then
+      if((string(1:26).eq.'MAX T RES FOR BAZ OF L USE' .or.
+     +   string(1:26).eq.'MAX T RES FOR AZI OF L USE' ) .and.
+     +   .not.aziall) then
           read (string(icolon2:),*) dtmaxazil
           go to 1
       endif
@@ -1290,7 +1301,11 @@ c
           intinp = 0
           aziall = .false.
           read (string(icolon2:),*) intinp
-          if(intinp.eq.1) aziall = .true.
+          if(intinp.eq.1 .and. .not.aziini) then
+            aziall = .true.
+            dtmaxazib = 99999.d0
+            dtmaxazil = 99999.d0
+          endif
           go to 1
       endif
 
@@ -1299,7 +1314,10 @@ c
           intinp = 0
           aziini = .false.
           read (string(icolon2:),*) intinp
-          if(intinp.eq.1) aziini = .true.
+          if(intinp.eq.1) then
+            aziini = .true.
+            aziall = .false.
+          endif
           go to 1
       endif
 
@@ -1379,11 +1397,13 @@ c
           fixinp = .false.
           read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
-             fixinp = .true.
-             lastfixt = .false.
-             lastfixi = .false.
-             lastfixm = .false.
-
+            fixinp = .true.
+            lastfixt = .false.
+            lastfixi = .false.
+            lastfixm = .false.
+            dtmaxazib = 50.d0
+            dtmaxazil = 50.d0
+            dtmaxslow = 10.d0
           endif
           go to 1
       endif
@@ -1911,6 +1931,7 @@ c
          print *,'filloc = ',filloc
          print *,'imo = ',imo
          print *,'stationfile = ',stationfile
+         print *,'statfile2 = ',statfile2
          print *,'statcorfile = ',statcorfile 
          print *,'inputfile   = ',inputfile 
          print *,'outputfile  = ',outputfile 
@@ -2831,13 +2852,23 @@ c     print*, timeo,jdate,yy,mon,mm,dd,idoy,hh,mi,sec
      +                   elevs,name,ierr)
 
         if(ierr.ne.0) then
-          print *,'Cannot find station: ',stat,' entry skipped'
-          ii = ii - 1
-          ierr = 0
-          go to 12
-        else
-          if(typctl.gt.5) print *,stat,jdate,lat,lon,elevs,name
+          
+          if(statfile2.ne.stationfile) then
+            ierr = 0
+            call get_station(statfile2,stat,jdate,lat,lon,
+     +                   elevs,name,ierr)
+          endif
+
+          if(ierr.ne.0) then
+            print *,'Cannot find station: ',stat,' entry skipped'
+            ii = ii - 1
+            ierr = 0
+            go to 12
+          endif
+
         endif
+
+        if(typctl.gt.5) print *,stat,jdate,lat,lon,elevs,name
 
         statpc = 0.d0
         statsc = 0.d0
@@ -7406,6 +7437,7 @@ c
 
 413   useds = used(i)
       usedm = ' '
+      usedsr = ' '
 
       if(sta(iev(i)).ne.stato) then
 
@@ -7591,6 +7623,7 @@ c
          phcd(nphas) = phid
          dddp(nphas) = 0.d0
          dpdh(nphas) = 0.d0
+         phsearch = 'L'
       endif
       nphass = nphas
       surfm = surf
@@ -7616,8 +7649,7 @@ c
       phid1 = phcd(j)
 
       phase_t = phase_type(phid1)
-      if((phsearch.eq.'P' .and. phase_t.ne.'P') .or.
-     +   (phsearch.eq.'S' .and. phase_t.ne.'S') ) go to 420
+      if(phsearch.ne.' ' .and. phsearch.ne.phase_t) go to 420
 
       dpa   = 0.d0
       dpaa  = 0.d0
@@ -8355,14 +8387,13 @@ c    +         fac,emeran(i)
 
       onscha = onflag(i)(3:3)
 
-      if(unc_out .and. useds(1:1).ne.' ' .or. useds(4:4).ne.' ') then
+      if(unc_out .and. (useds(1:1).ne.' ' .or. useds(4:4).ne.' ')) then
          onscha = '_'
-         if(phase_type(phase(i)).eq.'P') then
+         if(phase_type(phid1).eq.'P') then
             if(ttu(i).le.sisfo) onscha = 'Q'
             if(ttu(i).le.sisfe) onscha = 'E'
             if(ttu(i).le.sisfi) onscha = 'I'
-         else if(phid1.ne.'LR'.and.phid1.ne.'LQ' .and. phid1.ne.'L ')
-     +           then
+         else if(phase_type(phid1).eq.'S' .or. phid1(1:3).eq.'Rg ') then
             if(ttu(i).le.sisfo*2.d0) onscha = 'Q'
             if(ttu(i).le.sisfe*2.d0) onscha = 'E'
             if(ttu(i).le.sisfi*2.d0) onscha = 'I'
@@ -8598,7 +8629,7 @@ c
 
          if(output) then
             write(11,'(''Source time corrected for mean '', 
-     +           ''travel-time residual ( '',f9.3,'' )'')') stmean
+     +           ''travel-time residual ( '',f9.3,'' [s])'')') stmean
          endif
 
          if(dabs(stmean).gt.var(1) .and. itso.lt.1) then

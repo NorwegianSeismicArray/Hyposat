@@ -456,13 +456,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       Function get_mtyp(modeln0)
 
-      character*3 get_mtyp
-      character*40 uppcas
-      character*20 modeln0
-      character*40 modeln
-  
-      modeln = uppcas(modeln0)
-C (1:20)
+      character get_mtyp*3, uppcas*1024
+      character*20 modeln0, modeln
+
+      modeln(1:20) = uppcas(modeln0)(1:20)
 
       get_mtyp = '_'
 
