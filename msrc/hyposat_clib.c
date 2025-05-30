@@ -4,7 +4,7 @@ and fill in any missing human format time fields, needs enough info to
 compute julian date if julian date is not supplied.
 Author: T. McElfresh, CSS
 
-Modified for Buchum University Germany (BUG) use: Dierk Wand, Ruhr-University Bochum, 18. Jan. 1989
+Modified for Bochum University Germany (BUG) use: Dierk Wand, Ruhr-University Bochum, 18. Jan. 1989
 
 Modified for usage in HYPOSAT Johannes Schweitzer, NORSAR
 
