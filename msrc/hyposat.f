@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2      ' )
-c     parameter (vdate=' ( 28 May 2025)' )
+c     parameter (vdate=' ( 29 May 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 28 May 2025
+c     last changes: 29 May 2025
 c
 c----------------------------------------------------------------------
 c
@@ -887,7 +887,8 @@ c
           go to 1
       endif
 
-      if(string(1:18).eq.'DOWNWEIGHTING TASD') then
+      if(string(1:21).eq.'CHANGE WEIGHTING TASD' .or.
+     +   string(1:18).eq.'DOWNWEIGHTING TASD') then
           downw = ' '
           read (string(icolon2:),'(a4)') downw
           if(downw(1:1).eq.'1') ftvar = .true.
