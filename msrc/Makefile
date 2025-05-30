@@ -4,7 +4,7 @@
 #                                                            #
 # July 2013 , Johannes Schweitzer, NORSAR                    #
 #                                                            #
-#  statutus: May 2025                                   #
+#  statutus: May 2025                                        #
 #                                                            #
 #  johannes@norsar.no                                        #
 #                                                            #
@@ -21,6 +21,7 @@ obj1 = hyposat.o
 obj2 = hyposat_lib.o hyposat_file.o hyposat_cross.o hyposat_geo.o hyposat_geotab.o hyposat_phase.o hyposat_plane.o hyposat_inv.o
 obj3 = hyposat_crust.o hyposat_crust_mod.o hyposat_mag.o hyposat_loc.o hyposat_depth.o hyposat_time.o  hyposat_out.o
 obj4 = hyposat_numr.o hyposat_clib.o isf_in.o isf_out.o libtau_h.o jsonstorage.o
+ 
 #
 
 objm = hypomod.o
