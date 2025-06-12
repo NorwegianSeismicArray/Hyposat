@@ -4,11 +4,11 @@
 #                                                            #
 # July 2013 , Johannes Schweitzer, NORSAR                    #
 #                                                            #
-#  statutus: May 2025                                        #
+#  status: May 2025                                          #
 #                                                            #
 #  johannes@norsar.no                                        #
 #                                                            #
-# to be started with script make_hyposat                     #
+# to be started with C-shell script make_hyposat             #
 #                                                            #
 ##############################################################
 
