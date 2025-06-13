@@ -776,19 +776,30 @@ c     azimuthal gap of a list of event observations
 c
 c     taken out from main program hyposat.f
 c
+c     CPQ included 8 October 2024
+c
       subroutine azigap(epiaz0,dazgap,d1azi,d2azi,dazgap2,d1azi2,d2azi2,
-     +                  nobs,indx)
+     +                  cpq,cpq2,nobs,indx,mread0)
 
-      real*4 dazgap,d1azi,d2azi,dazgap2,d1azi2,d2azi2
       real*4 epiaz0(*)
-      integer nobs,indx(*)
-      real*4 epiaz(4000)
-c
+      real*4 dazgap,d1azi,d2azi,dazgap2,d1azi2,d2azi2
+
+      real*8 cpq, cpq2
+ 
+      integer mread0, nobs, indx(*)
+
 c     internal
-c
-      integer i,j
+
+      real*4 epiaz(mread0)
+
       real*4 dmazi
 
+      real*8 daz, deg2rad, pi2
+
+      integer i,j,k
+
+      pi2 = 8.d0*datan(1.d0)
+      deg2rad = pi2/360.d0
 
       j = 1
 
@@ -815,6 +826,7 @@ c
       dazgap = 0.
       d1azi  = 0.
       d2azi  = 360.
+      cpq = 0.d0
 
       if(j.gt.1) then
 
@@ -840,6 +852,11 @@ c
 
            endif
 
+           daz = dble(dmazi)*deg2rad
+           cpq = cpq + daz - dsin(daz)
+
+c          print *,i,dmazi,daz,dsin(daz),cpq
+
 200     continue
 
       else
@@ -851,6 +868,9 @@ c
       dazgap2 = 0.
       d1azi2  = 0.
       d2azi2  = 360.
+      cpq2 = 0.d0
+
+      k = 0
 
       if(j.gt.2) then
 
@@ -863,6 +883,7 @@ c
                  d1azi2  = epiaz(i)
                  d2azi2  = epiaz(i+2)
                  dazgap2 = dmazi
+                 k = i + 1
               endif
 
            else if(i.eq.j-1) then
@@ -872,6 +893,7 @@ c
                  d1azi2  = epiaz(i)
                  d2azi2  = epiaz(1)
                  dazgap2 = dmazi
+                 k = j
               endif
 
            else if(i.eq.j) then
@@ -881,17 +903,46 @@ c
                  d1azi2  = epiaz(i)
                  d2azi2  = epiaz(2)
                  dazgap2 = dmazi
+                 k = 1
               endif
 
            endif
 
 300      continue
 
+         if(k.eq.j) then
+            epiaz(k) = epiaz(k-1)
+         else if(k.gt.0) then
+            epiaz(k) = epiaz(k+1)
+         endif
+        
+         do 350 i =1,j
+
+            if(i.lt.j) then
+              dmazi = epiaz(i+1) - epiaz(i)
+            else if(i.eq.j) then
+              dmazi = epiaz(1) + 360. - epiaz(i)
+            endif
+
+            daz = dble(dmazi)*deg2rad
+            cpq2 = cpq2 + daz - dsin(daz)
+
+c             print *,'2nd ',i,dmazi,daz,dsin(daz),cpq2
+350      continue
+
       else
 
          dazgap2 = 360.
 
       endif
+
+      cpq  = 1.d0 - cpq/pi2 
+      cpq2 = 1.d0 - cpq2/pi2
+c
+c     set to 0. in the case of numerical errors
+c
+      if(cpq.lt.0.d0) cpq = 0.d0
+      if(cpq2.lt.0.d0) cpq2 = 0.d0
 
       return
       end

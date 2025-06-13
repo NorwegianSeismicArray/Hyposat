@@ -2313,7 +2313,7 @@ C
 C       PROGRAM ATTACH
 C
 C       Author: GUENTER LEYDECKER
-C       Hannover, Germany
+C       BGR, Hannover, Germany
 C
 C
 C       ATTACHES EACH EPICENTER TO HIS SEISMOGEOGRAPHICAL REGION
@@ -2396,6 +2396,9 @@ C
 C **********************************************************************
        SUBROUTINE STEKIN (STLAT,STLONG,STNAME,STPOLY,KNAME,lui2,ierr)
 C
+C       Author: GUENTER LEYDECKER
+C       BGR, Hannover, Germany
+C
 C       to read the datafile with the SEISMOGEOGRAPHICAL REGIONS
 C
 C     input: polygon coordinates in degree ----> output: cartesian
@@ -2449,6 +2452,10 @@ C
        END
 ************************************************************************
        SUBROUTINE GEOKOO (LAT,LONG,YLAT,XLONG)
+C
+C       Author: GUENTER LEYDECKER
+C       BGR, Hannover, Germany
+C
 C       for input of LAT and LONG in degree
 C
 C       OUTPUT: YLAT = y-Coordinate in km
@@ -2480,6 +2487,10 @@ C
        END
 C***********************************************************************
        FUNCTION INSIDE (X0,Y0,PX,PY,N)
+C
+C       Author: GUENTER LEYDECKER
+C       BGR, Hannover, Germany
+C
 C       GODKIN,C.B. AND J.J.PULLI: APPLICATION OF THE "WINDING-NUMBER
 C       ALGORITHM" TO THE SPATIAL SORTING OF CATALOGED EARTHQUAKE DATA.
 C       BSSA 75, 5, PP. 1845-1848, OCTOBER 1984
@@ -2527,6 +2538,11 @@ C       type *, ' N= ',N,' INSIDE=',INSIDE,' ISICR=',ISICR
        END
 C**********************************************************************
        FUNCTION KSICR(X1,Y1,X2,Y2)
+C
+C       Author: GUENTER LEYDECKER
+C       BGR, Hannover, Germany
+C
+C       for input of LAT and LONG in degree
 C       COMPUTE SIGNED CROSSING NUMBER
 C
 C       A "SIGNED CROSSING NUMBER" TELLS WETHER A SEGMENT 

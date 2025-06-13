@@ -90,7 +90,7 @@ c
 
       ierr = 0
 
-      quot = 1.d-4
+      quot = 1.d-5
 
       if(typctl.gt.10) then
        unit = 35
@@ -145,9 +145,6 @@ C modifying the singular values
 C
       kq = m
 
-      cmin = 999.d99
-      cmax = 0.d0
-
       DO 50 K=1,m
 
       IF (W(K).LT.QUOT) then
@@ -156,8 +153,6 @@ C
           EWMOD(K)=0.d0
         else
           EWMOD(K)=1.d0/W(K)
-          if(w(k).lt.cmin) cmin = w(k)
-          if(w(k).gt.cmax) cmax = w(k)
         endif
 
 50    CONTINUE
@@ -253,7 +248,7 @@ c      do 169 j1=1,m
 c         write(*,'(4f12.8,2x,2f13.8)') 
 c    +         (v(j1,j2),j2=1,m),W(j1),EWMOD(j1)
 c169      continue
-c
+ 
 
 C
 C covariance matrix (temporarly stored in AT)

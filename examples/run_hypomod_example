@@ -5,10 +5,9 @@ setenv HYPOSAT_DATA ../data
 \cp ./hyposat-in.tele hypomod-in
 \cp hyposat-parameter.tele.mod hyposat-parameter
 
-../proc9/hypomod_l.new
-#
+../bin/hypomod
 
 \diff hypomod-out hypomod-out.tele | more
 
-#\rm hypomod-in hyposat-parameter
+\rm hypomod-in hyposat-parameter
 exit

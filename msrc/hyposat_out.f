@@ -1,7 +1,8 @@
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine isf_out_line(unit,line,com)
+      subroutine isf_out_line(unit,onflags,line,com)
       integer unit
       character line*(*),com*(*)
+      character onflags*3
 
       character uppcas*40,chgcas*40
 
@@ -10,7 +11,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      +          magind*1,picktype*1,dumph*8
       real*4 dist,esaz,timeres,azim,azimres,slow,slowres,snr,amp,per,mag
       integer hh,mi,ss,msec
-      integer write_phase, itest
+      integer write_phase, itest, write_isf_error
 
       integer ISF_NULL
       parameter (ISF_NULL=9999999)
@@ -49,6 +50,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       azim = ISF_NULL
       if(line(60:65).ne.'      ') read (line(60:65),'(f6.2)') azim
       azimres = ISF_NULL
+
       if(line(67:73).ne.'       ') then
          read (line(67:73),'(f7.2)') azimres
       else
@@ -88,8 +90,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          magtype  = line(128:129)
       endif
 
-      picktype = '_'
-      sp_fm    = '_'
+      picktype = onflags(1:1)
+      sp_fm    = onflags(2:2)
       detchar  = line(131:131)
 
       magind   = ' '
@@ -109,10 +111,14 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      + slowdef,snr,amp,per,picktype,sp_fm,detchar,magtype,magind,
      + mag,arrid,com)
 
+      if(itest.eq.20) then
+         itest = write_isf_error(1)
+      endif
+
       return
       end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      subroutine json_out_line(line,com,time,json_rc)
+      subroutine json_out_line(line,com,time,onflags,json_rc)
 c
 c     time - onset time
 c     line - line with observation information
@@ -120,8 +126,8 @@ c     com  - onset id(s)
 c     jrc  - json error code
 c
       character line*(*), com*(*)
-      character phas1*8, phas2*8, used*5
-      integer  unit, json_rc
+      character phas1*8, phas2*8, used*5, onflags*3
+      integer   json_rc
       real*8    time, val
 
 c
@@ -163,8 +169,8 @@ c
         read (line(74:79),'(f6.2)') val
         call json_add_double("ray_param", val, json_rc)
 
-        if(line(67:73).ne.'       ') then
-          read (line(67:73),'(f7.2)') val
+        if(line(81:86).ne.'       ') then
+          read (line(81:86),'(f6.2)') val
           call json_add_double("ray_param_res", val, json_rc)
         endif
       endif
@@ -173,6 +179,15 @@ c
       do 10 i=1,len(used)
 10    if(used(i:i).eq.' ') used(i:i)='_'
       call json_add_string("used", used, json_rc)
+
+      if(onflags(1:1).ne.'_' .and. onflags(1:1).ne.' ')
+     +   call json_add_string("onset pick", onflags(1:1), json_rc)
+
+      if(onflags(2:2).ne.'_' .and. onflags(2:2).ne.' ')
+     +   call json_add_string("onset polarity", onflags(2:2), json_rc)
+
+      if(onflags(3:3).ne.'_' .and. onflags(3:3).ne.' ')
+     +   call json_add_string("onset character", onflags(3:3), json_rc)
 
       if(line(94:101).ne.'        ') then
          read (line(95:101),'(f7.2)') val

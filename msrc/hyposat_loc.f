@@ -32,7 +32,13 @@ c
 c     April 2021     double mutlitples included (calculated together
 c                    with single multiples)
 c
-c     last changes/corrections 04. July 2022
+c     August 2024    density of rays per layer increased
+c
+c     April 2025     bug for low velocity layer corrected
+c                    phase definition for P and S updated
+c                    correction for sources below surface
+c
+c     last changes/corrections 16 May 2025
 c
 
       subroutine ttloc(ho,dis,czo1,nphas2,ttc,dtdd,dtdh,dpdh,dddp,
@@ -146,7 +152,7 @@ c
 c             dconr   = depth of Conrad discontinuity in model
 c             dmoho   = depth of Moho discontinuity in model
 c
-c    in common MODEL :
+c    output in common MODEL :
 c 
 c             v0(1,i) =  P velocity in layer i
 c             v0(2,i) =  S velocity in layer i
@@ -183,7 +189,8 @@ c     MAXLA   =    maximum number of allowed layers in the model as defined in
 c
 c                  model.h
 c
-c               (if needed then change also parameter MAXLA in subroutine reflex )
+c               (if needed then also parameter MAXLA in subroutine reflex has 
+c                to be changed!!! )
 c
 c
       include 'model.h'
@@ -224,8 +231,8 @@ c
       RE=6371.d0
       AA=PIM*RE
 
-      IB = 20
-      if(locgeo.or.dis.le.0.1) IB = 100
+      IB = 100
+      if(locgeo.or.dis.le.0.1) IB = 500
       IBN= IB*10
 
       ierr = 0
@@ -248,11 +255,11 @@ c
 
       endif
 
-       if (typctl.ge.8) then
+      if (typctl.ge.8) then
          print *,'Decoded INDPH ',indph,indph1,indph2,indph3,indph4,
      +           indph5
          print *,'imo ',imo,' mtyp ',mtyp
-       endif
+      endif
 
       if (imo.le.2 .or. imo.eq.5) then
 
@@ -274,12 +281,7 @@ c
 
          itrue = 0
          inum = 1
-         call get_mod_c10(itrue,inum,typctl,ierr)
-
-         if(ierr.ne.0) then
-            ierr = 99
-            go to 9000
-         endif
+         call get_mod_c10(itrue,inum,typctl)
 
          go to 100
 
@@ -293,10 +295,10 @@ c
 
 100   continue
 
-      imoh = 600
-      icon = 600
-      ipd  = 0
-      isd  = 0
+      imoh = 2*maxla
+      icon = 2*maxla
+      ipd  = 2*maxla
+      isd  = 2*maxla
 
 c
 c     reset onset table
@@ -362,14 +364,13 @@ c
 C     (k-loop)
 C
 
-      ISS = -1
-
       DO 810 K=1,2
 
       ij = 0
       izo = 0
 
       IQQ = 0
+      iss = -1
 c
 c     Earth flattening approximation and interpolation of
 c     source and eventually receiver layers
@@ -392,43 +393,96 @@ c
 
       call efad (Z(I),V0(K,I),H(IJ),V(K,IJ))
 
-      if(dabs(zo(iql)-Z(i)).lt.1.d-4 .and.izo.eq.0) then
-         IQQ = IJ
-         izo = 1
-         if(iql.le.2) rzv(k) = v0(k,i)
-         goto 499
-      endif
+      if (sdep.ge.zo(iql) .or. sdep.le.0.d0 ) then
 
-      if(Z(i2).gt.zo(iql).and.Z(i).lt.zo(iql).and.izo.eq.0) then
+         if(iqq.gt.0) go to 495
 
-         D=(zo(iql)-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
-         if(iql.le.2) rzv(k) = D
+         if(dabs(zo(iql)-Z(i)).lt.1.d-4 .and.izo.eq.0) then
+            IQQ = IJ
+            izo = 1
+            if(iql.le.2) rzv(k) = v0(k,i)
+            goto 495
+         endif
 
-         ij = ij + 1
-         IQQ = IJ
-         az(ij) = ' '
-         izo = 1
+         if(Z(i2).gt.zo(iql).and.Z(i).lt.zo(iql).and.izo.eq.0) then
+
+            D=(zo(iql)-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
+            if(iql.le.2) rzv(k) = D
+
+            ij = ij + 1
+            IQQ = IJ
+            az(ij) = ' '
+            izo = 1
 C
-         call efad (zo(iql),D,H(IJ),V(K,IJ))
+            call efad (zo(iql),D,H(IJ),V(K,IJ))
 
-      endif
+         endif
 
-499   if(sdep.eq.Z(i).and.sdep.gt.0.d0) ISS = IJ
+495      if(iss.gt.0) go to 500
 
-      if(Z(i2).gt.sdep.and.Z(i).lt.sdep.and.sdep.gt.0.d0) then
+         if(dabs(sdep-Z(i)).lt.1.d-4 .and.sdep.gt.0.d0) then
+            ISS = IJ
+            goto 500
+         endif
 
-         D=(sdep-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
+         if(Z(i2).gt.sdep.and.Z(i).lt.sdep.and.sdep.gt.0.d0) then
 
-         ij = ij + 1
-         ISS = IJ
-         az(ij) = ' '
+            D=(sdep-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
+
+            ij = ij + 1
+            ISS = IJ
+            az(ij) = ' '
 C
-         call efad (sdep,D,H(IJ),V(K,IJ))
+            call efad (sdep,D,H(IJ),V(K,IJ))
 
+            goto 500
+
+         endif
+
+      else if(sdep.lt.zo(iql) .and. sdep.gt.0.d0 ) then
+
+         if(iss.gt.0) go to 498
+
+         if(dabs(sdep-Z(i)).lt.1.d-4 .and.sdep.gt.0.d0) then
+            ISS = IJ
+            goto 498
+         endif
+
+         if(Z(i2).gt.sdep.and.Z(i).lt.sdep.and.sdep.gt.0.d0) then
+
+            D=(sdep-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
+
+            ij = ij + 1
+            ISS = IJ
+            az(ij) = ' '
+C
+            call efad (sdep,D,H(IJ),V(K,IJ))
+
+         endif
+
+498      if(iqq.gt.0) goto 500
+
+         if(dabs(zo(iql)-Z(i)).lt.1.d-4 .and.izo.eq.0) then
+            IQQ = IJ
+            izo = 1
+            if(iql.le.2) rzv(k) = v0(k,i)
+            goto 500
+         endif
+
+         if(Z(i2).gt.zo(iql).and.Z(i).lt.zo(iql).and.izo.eq.0) then
+
+            D=(zo(iql)-Z(i))*(V0(K,I2)-V0(K,I))/(Z(i2)-Z(i)) + V0(K,I)
+            if(iql.le.2) rzv(k) = D
+
+            ij = ij + 1
+            IQQ = IJ
+            az(ij) = ' '
+            izo = 1
+C
+            call efad (zo(iql),D,H(IJ),V(K,IJ))
+
+         endif
       endif
-
-      IF(V(1,IJ).GE.10.D0 .AND. IPD.EQ.0)  IPD  = IJ
-      IF(V(2,IJ).GE.5.5D0 .AND. ISD.EQ.0)  ISD  = IJ
 
 500   continue
 
@@ -441,19 +495,24 @@ C
       V2(K,I)=V(K,I2)
 
       IF(dabs(V2(K,I)-V(K,I)).le.0.001d0) THEN
-         V2(K,I)=1.0001d0*V(K,I)
+         V2(K,I)=1.000001d0*V(K,I)
          V(K,I2)=V2(K,I)
       ENDIF
 
       zdiff=H(I2)-H(I)
       ndisc(i) = 0
       IF(dabs(zdiff).le.0.0001d0)  then
-         zdiff=0.0001d0
-         H(i2)= H(i2) + zdiff
+         zdiff=1.d-6*H(i)
+         H(i2)= H(i) + zdiff
          ndisc(i) = 1
       endif
 
       G(K,I)=(V2(K,I)-V(K,I))/zdiff
+
+      if(h(i).gt.210.0d0) then
+         IPD  = i
+         ISD  = i
+      endif
 
 800   continue
       
@@ -461,7 +520,7 @@ C
         print *,'[hyposat_loc] Model used:'
         print *,'i z h v(1) v(2) v2(1) v2(2) g(1) g(2)'
         do 811 i=1,j
-        print*,i,az(i),z(i),h(i),v(1,i),v(2,i),v2(1,i),v2(2,i),
+        print*,i,z(i),h(i),az(i),v(1,i),v(2,i),v2(1,i),v2(2,i),
      +  g(1,i),g(2,i)
 811      continue
       endif
@@ -488,27 +547,26 @@ C
 
       conv  = .false.
 
-      IF(IQQ.EQ.1)  GO TO 1000
+      IF(IQQ.EQ.1 .and. iss.le.iqq)  GO TO 1000
 
 C
-C     direct waves ( if source deeper than 0. or
+C     direct waves (if source deeper than 0. or
 c     source at the surface and the station below)
 c
 c     plus defining requested direct phases
 C
 
-      if(kp) phase(1:1)='P'
-      if(ks) phase(1:1)='S'
-
-      if(iqq.le.imoh) then
-         if(iqq.le.icon) phase(2:)='g      '
-         if(iqq.gt.icon) phase(2:)='b      '
-      else
-         phase(2:)='n      '
+      if(kp) then
+         phase='Pg      '
+         if(iqq.gt.icon) phase='Pb      '
+         if(iqq.gt.imoh) phase='Pn      '
+         if(iqq.ge.ipd)  phase='P       '
+      else if(ks) then
+         phase='Sg      '
+         if(iqq.gt.icon) phase='Sb      '
+         if(iqq.gt.imoh) phase='Sn      '
+         if(iqq.ge.isd)  phase='S       '
       endif
-
-      if((kp .and. (iqq.ge.ipd) .and. (ipd.ne.0)) .or.
-     +   (ks .and. (iqq.ge.isd) .and. (isd.ne.0)) ) phase(2:)='       '
 
       if(iss.gt.iqq) then
 
@@ -520,9 +578,9 @@ C
 
          do 990 klr = 1,3
 
-         del1 = del(klr)
+         del1 = aa*del(klr)
 
-         tt(2) = del1/v(k,iqq)
+         tt(2) = del1/v(iss,iqq)
 
          ion(iph,iql,klr) = ion(iph,iql,klr)+1
 
@@ -575,28 +633,36 @@ C
       VMAX=V(K,IQ5)
 
       DO 1300 I=1,IQ5
+
       FA(1,I)=2.d0
       FA(2,I)=0.d0
+
       IF(I.GE.imul) FA(1,I)=FFA
-      IF(I.LT.IQQ)  THEN
-         FA(1,I)=FA(1,I)-1.d0
-         if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
-c        GO TO 1300
-      ENDIF
+      IF(I.LT.IQQ)  FA(1,I)=FA(1,I)-1.d0
       IF(I.LT.IQ4.AND.surf) FA(1,I)=FA(1,I)+1.d0
+      if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
+
       IF(I.LT.IQ4.AND.surfc) then
          FA(2,I)=FA(2,I)+1.d0
+         if(i.lt.iss) FA(2,I)=FA(2,I)-1.d0
          IF(k.eq.1 .and. VMAX.LT.V(2,I)) VMAX=V(2,I)
          IF(k.eq.2 .and. VMAX.LT.V(1,I)) VMAX=V(1,I)
       endif
-      if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
+
       IF(fa(1,i).gt.0.9d0 .and. VMAX.LT.V(K,I)) VMAX=V(K,I)
+
+      if(ndisc(i).ne.0) FA(1,I)= 0.d0
+
 1300  continue
 C
 C
       DO 3000 I=IQ5,M
 
-      if (ndisc(i).ne.0) go to 3000
+      D=V2(K,I)
+      IF(D.LE.VMAX)  GO TO    3000
+
+
+      IF(imul.LT.M.AND.I.LT.imul) GO TO 2600
 
       ib2 = ib
       ib1 = 1
@@ -606,23 +672,19 @@ C
       IF(I.GE.imul) FA(1,I)=FFA
       if(i.lt.iss) FA(1,I)=FA(1,I)-1.d0
 
-      if(kp) phase(1:1)='P'
-      if(ks) phase(1:1)='S'
+      if(ndisc(i).ne.0) FA(1,I)= 0.d0
 
-      if(i.lt.imoh) then
-         if(i.le.icon) phase(2:)='g      '
-         if(i.gt.icon) phase(2:)='b      '
-      else
-         phase(2:)='n      '
+      if(kp) then
+         phase='Pg      '
+         if(i.gt.icon) phase='Pb      '
+         if(i.gt.imoh) phase='Pn      '
+         if(i.ge.ipd)  phase='P       '
+      else if(ks) then
+         phase='Sg      '
+         if(i.gt.icon) phase='Sb      '
+         if(i.gt.imoh) phase='Sn      '
+         if(i.ge.isd)  phase='S       '
       endif
-
-      if((kp .and. i.ge.ipd .and. ipd.ne.0) .or.
-     +   (ks .and. i.ge.isd .and. isd.ne.0) ) phase(2:)='       '
-
-      D=V2(K,I)
-      IF(D.LE.VMAX)  GO TO    3000
-
-      IF(imul.LT.M.AND.I.LT.imul) GO TO 2600
 
       C=V(K,I)
       IF(C.LT.VMAX) C=VMAX
@@ -638,7 +700,7 @@ C
 C
       DO 2000 KK=1,I
 
-      if(fa(1,kk).lt.0.9d0 .or. ndisc(kk).ne.0) go to 2000
+      if(fa(1,kk).lt.0.9d0) go to 2000
 
       E=V(K,KK)
       G1=E/VV
@@ -670,7 +732,7 @@ c
 
          DO 2001 KK=1,IQ4
 
-         if(FA(2,KK).lt.0.9d0 .or. ndisc(kk).ne.0) go to 2001
+         if(FA(2,KK).lt.0.9d0) go to 2001
 
          E=V(KC,KK)
          G1=E/VV
@@ -1084,6 +1146,7 @@ c       endif
 
       do 8850 i = 1,nphas1
 8850  rtt(i) = sngl(tti(i))
+
       call indexx(nphas1,rtt,indx)
 
       do 8900 i=1,nphas1
@@ -1149,6 +1212,8 @@ C
 
          if(I.LT.ISS)  FA(1,I)=FA(1,I)-1.d0
 
+         if(ndisc(i).ne.0) FA(1,I)= 0.d0
+
 900      CONTINUE
 
       else
@@ -1161,6 +1226,7 @@ C
          if(I.LT.ISS)  FA(1,I)=FA(1,I)-1.d0
          IF(V(K,I) .GT.VMAX)  VMAX=V(K,I)
          IF(V2(K,I).GT.VMAX)  VMAX=V2(K,I)
+         if(ndisc(i).ne.0) FA(1,I)= 0.d0
 1000     CONTINUE
 
       endif
@@ -1183,7 +1249,7 @@ C
       R=0.D0
 
       DO  1100  KK=1,L
-      if(FA(1,KK).lt.0.9d0 .or. ndisc(kk).ne.0) go to 1100
+      if(FA(1,KK).lt.0.9d0) go to 1100
       E=V(K,KK)
       G1=E*RVV
       P=DSQRT(DABS(1.D0-G1*G1))
@@ -1199,7 +1265,7 @@ C
       if(conv) then
 
          DO  1110  KK=1,L
-         if(FA(2,KK).lt.0.9d0 .or. ndisc(kk).ne.0) go to 1110
+         if(FA(2,KK).lt.0.9d0) go to 1110
          E=V(KC,KK)
          G1=E*RVV
          P=DSQRT(DABS(1.D0-G1*G1))

@@ -254,105 +254,6 @@ c     print *,phase,rayp,xcor,tcor,rayok
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine ellip_read(ecolatr,azi,del,zo,phas,p,ecor,ierr)
-c
-c****6789012345678901234567890123456789012345678901234567890123456789012
-c
-c     Subroutine ellip calls a routine to calculates the ellipticity 
-c     correction for a given source-receiver combination for seismic 
-c     phases of the AK135 tables (as far as availablbe). Approximations
-c     are used for several not defined phases.
-c
-c     After Brian Kennett (pers. communication) does this set of 
-c     ellipticity corrections also work fine with IASP91 tables. 
-c     Therefore, we will only use this set of tables in HYPOSAT for all 
-c     different velocity models.
-c
-c     Johannes Schweitzer, NORSAR, February 2010
-c
-c     input:  ecolatr       geocentric colatitude of the event in rad
-c
-c             azi           azimuth from event to station in deg
-c
-c             del           distance between event and station in deg
-c
-c             zo            event depth in km
-c
-c             phas          phase name
-c
-c             p             ray paramter of phase in sec/deg
-c
-c     output: ecor          ellipticity correction of this phase in sec
-c
-c             ierr          error status
-c
-c
-c version:  25. October 1996,  johannes schweitzer
-c
-c           03 May 2021, changed to double precision
-c           16 May 2024, Version force reading corrections file
-c
-
-      integer ierr
-      real*8  ecolatr,azi,p,ecor,del,zo
-      real*8  ecolate,p1,delo,azi1,deg2rad
-      character*8 phas, phas1
-      logical errf
-
-c
-c     definition of several constants:
-c
-      deg2rad = datan(1.d0) / 45.d0
-      ierr    = 0
-      ecor    = 0.d0
-      azi1    = azi
-      delo    = del
-      p1      = p
-      ecolate = ecolatr
-
-      phas1 = phas
-c
-c     Search for multiple core phases observed at distance 0 deg,
-c     but not for .PKi... or .SKi... phases.
-c
-c     In this case, the phases travelled once around the Earth and 
-c     ray parameter p1 (=0.!) is not an indication for this!
-c
-      if(delo.eq.0.d0 .and.
-     *   (phas1(3:3).ne.'i'.and.phas1(4:4).ne.'i') ) then
-         if (phas1(1:2).eq.'PK'.or.phas1(1:2).eq.'SK') p1=-999.d0
-         if (phas1(1:2).eq."P'".or.phas1(1:2).eq."S'") p1=-999.d0
-         if (phas1(2:3).eq.'PK'.or.phas1(2:3).eq.'SK') p1=-999.d0
-         if (phas1(2:3).eq."P'".or.phas1(2:3).eq."S'") p1=-999.d0
-      endif
-
-      if(p1.lt.0.d0) then
-         delo = 360.d0 - delo
-         azi1 = azi1 - 180.d0
-         if(azi1.lt.0.d0) azi1 = 360.d0 + azi1
-      endif
-
-      azi1    = deg2rad*azi1
-C Make sure to read correction file...
-      index = 1
-      call elpcor(phas1,delo,zo,ecolate,azi1,ecor,errf,index)
-      index = 2
-      call elpcor(phas1,delo,zo,ecolate,azi1,ecor,errf,index)
-      index = 3
-      call elpcor(phas1,delo,zo,ecolate,azi1,ecor,errf,index)
-
-      if(errf) then
-         ierr = 999
-         ecor = 0.d0
-      endif
-
-      return
-      end
-
-
-
-
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine ellip(ecolatr,azi,del,zo,phas,p,ecor,ierr)
 c
 c****6789012345678901234567890123456789012345678901234567890123456789012
@@ -505,7 +406,7 @@ c       environment variable name corrected: Jan 27, 1997
 c
 c    May 2021 JS:
 c    changed to double precision
-c    reading chaned from 'direct access' readings to one time input
+c    reading changed from 'direct access' readings to one time input
 c
 c
 c     save sc0,sc1,sc2
@@ -628,10 +529,8 @@ c         print*, 'phcode,np,d1,d2: ', j,phcod(j),np(j),d1(j),d2(j)
 
 c 
        close (35)
-       if (ind.lt.1) then
-         return
-       endif
        return
+
       endif
 
 
@@ -673,7 +572,7 @@ c     to reduce code, use only one function to count characters
 c
       nc=min(len_trim(phase),8)
       do 10 i=1,NUMPH
-c        print *,i,phase,nc,phcod(i),phnch(i)
+c     print *,i,phase,nc,phcod(i),phnch(i)
         if(nc.ne.phnch(i)) goto 10
         if (phase(1:nc) .eq. phcod(i)(1:nc)) then
           ip = i
@@ -689,10 +588,11 @@ c                                             check phase aliases
 c                                              phase not found
 c     print *, 'ip:',ip,phase
       if(ip.lt.0) then
-        print *, phase,'  is not available'
+c       print *, phase,'  is not available'
         abrt = .true.
         return
       endif
+
 c     Ne = phspn(ip)
       if(np(ip).ne.phspn(ip)) then
         print*, 'ELPCOR: HELP! - index wrong for ellip. corrections'
@@ -717,7 +617,7 @@ c                                  depth index
          endif
  25    continue
  26    continue
-c       print *, 'idist, jdepth;',idist,jdepth
+c      print *, 'idist, jdepth;',idist,jdepth
 c
 *                      need to allow for zero entries (where phase
 *                      description strongly depth dependent)
@@ -758,7 +658,7 @@ c tau2
      ^             (edepth-dpth(jdepth))/(dpth(jdepth+1)-dpth(jdepth))
          tau2 = g2
 c
-c         print *, 'tau0,tau1,tau2:',tau0,tau1,tau2
+c        print *, 'tau0,tau1,tau2:',tau0,tau1,tau2
 c j.s.   caz = cos(azim)
 c j.s.   cbz = cos(2.0*azim)
 c         print *, 'azim,caz,cbz',azim,caz,cbz    

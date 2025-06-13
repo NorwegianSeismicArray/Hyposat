@@ -114,16 +114,15 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       FUNCTION UPPCAS(WORD)
       character*(*) word
-      character*40 uppcas,tword
+      character*1024 uppcas,tword
       integer lent
 
       lent = len(word) 
-      if(lent.gt.40) then
+      if(lent.gt.1024) then
          print *,' UPPCAS input too long ',word
          STOP
       endif
       uppcas = ' '
-      tword  = ' '
       tword  = word(1:lent)
       do 100 i=1,lent
       ii= ichar(tword(i:i))
@@ -138,16 +137,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       FUNCTION LOWCAS(WORD)
       character*(*) word
-      character*40 lowcas,tword
+      character*1024 lowcas,tword
       integer lent
 
       lent = len(word)
-      if(lent.gt.40) then
+      if(lent.gt.1024) then
          print *,' LOWCAS input too long ',word
          STOP
       endif
       lowcas = ' '
-      tword  = ' '
       tword  = word(1:lent)
       do 100 i=1,lent
       ii= ichar(tword(i:i))
@@ -489,4 +487,28 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       end
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      function rdig(a,i)
 
+c     function to round the real number a to i decimal digits to avoid
+c     numbers like  -0.00 when printing out.
+
+      real*8 a, b, rdig
+      integer i, j
+
+      rdig = a
+
+      if(a.lt.0.d0) then
+
+        j = -i-1
+        b = -5.d0 * 10.d0**j
+
+        if(a.gt.b) rdig = 0.d0
+
+c       print *,i,a,rdig,b
+
+      endif
+
+      return
+
+      end
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC

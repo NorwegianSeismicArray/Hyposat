@@ -1080,6 +1080,7 @@ C     N-2007 Kjeller
 C
 C.    MODIFICATION
 C.     here changed for HYPOSAT February 2007, JS
+C.     further changers            May 2024, JS
 C.    CORRECTION
 C.======================================================================
  
@@ -1182,9 +1183,17 @@ C     Compute indices of correction term:
       l = 0
 
 C     Find table-index K of period closest to input period:
+
       DF=10.
-      if(per.lt.FPER(1)*.8) go to 4000
-      if(per.gt.FPER(noper)*1.2) go to 4000
+
+c
+c JS: 23 May 2024, changed: table limits only extended by +/- 5% 
+c             instead of +/- 20%
+c
+c     if(per.lt.FPER(1)*.8) go to 4000
+c     if(per.gt.FPER(noper)*1.2) go to 4000
+      if(per.lt.FPER(1)*.95) go to 4000
+      if(per.gt.FPER(noper)*1.05) go to 4000
       DO 3100  I=1,NOPER
       DIF=ABS(PER-FPER(I))
       IF (DIF.GT.DF)                   GO TO 3100
@@ -1195,6 +1204,9 @@ C     Find table-index K of period closest to input period:
 C     Find table-index L of delta closest to input distance:
       DD=10000.
       if(dist.gt.FDELT(nodelt)*1.05) go to 4000
+c JS 23 May 2024: also minimum distance added
+      if(dist.lt.FDELT(nodelt)*0.095) go to 4000
+
       DO 3200  I=1,NODELT
       DIF=ABS(DIST-FDELT(I))
       IF (DIF.GT.DD)                   GO TO 3200

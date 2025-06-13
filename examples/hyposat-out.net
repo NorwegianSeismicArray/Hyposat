@@ -1,4 +1,4 @@
-HYPOSAT Version 6.1a
+HYPOSAT Version 6.2
 
 Event solution by HYPOSAT
 
@@ -11,10 +11,13 @@ Mean epicenter calculated from    22 backazimuth observation pairs
 Mean epicenter lat:   66.954 +/-     0.994 [deg]
 Mean epicenter lon:   21.750 +/-     0.206 [deg]
 
-Source time (set):  766584007.760 [s]
+S-P Travel-time difference type 3 with   2 observation(s)
+   to=   766584015.6 +/-   2.1 [s] Vp/Vs= 1.80 +/- 0.04
+Mean source time:  766584015.596 +/-   2.149 [s]
+Mean       vp/vs:          1.798 +/-   0.041
 
-Iterations        :    3
-Number of defining:   24
+Iterations        :    5
+Number of defining:   22
 Reference models  : CRUST 1.0 and iasp91_A            
 CRUST 1.0 used for Station corrections
 
@@ -22,70 +25,66 @@ The new source parameters:
 
 Confidence level of given uncertainties:  95.00 %
 
-Source time  : 1994 04 17 12 00  5.234 +/-    3.725 [s]
-        or               766584005.234 +/-    3.725 [s]
-        or       1994-107:12.00.05.234 +/-    3.725 [s]
+Source time  : 1994 04 17 12 00  6.538 +/-    2.796 [s]
+        or               766584006.538 +/-    2.796 [s]
+        or       1994-107:12.00.06.538 +/-    2.796 [s]
 
-
-Epicenter lat:                 67.1654 +/-   0.1563 [deg]
-Epicenter lon:                 21.5747 +/-   0.4589 [deg]
+Epicenter lat:                 67.1372 +/-   0.1108 [deg]
+Epicenter lon:                 21.6455 +/-   0.3368 [deg]
 Source depth :                  0.00   [km] Fixed by HYPOSAT
 
-Source time corrected for mean travel-time residual (   0.946)
+Source time corrected for mean travel-time residual (     0.580 [s])
 
-Source time  : 1994 04 17 12 00  6.180 +/-    3.725 [s]
-        or               766584006.180 +/-    3.725 [s]
-        or       1994-107:12.00.06.180 +/-    3.725 [s]
+Source time  : 1994 04 17 12 00  7.119 +/-    2.796 [s]
+        or               766584007.119 +/-    2.796 [s]
+        or       1994-107:12.00.07.119 +/-    2.796 [s]
 
-
-Epicenter error ellipse:
-Major half axis:    45.29 [km]  Minor half axis:    41.78 [km]
-Azimuth:      156.2  [deg] Area:        5945.36 [km**2]
+Epicenter uncertainty ellipse:
+Major half axis:    45.18 [km]  Minor half axis:     4.85 [km]
+Azimuth:      158.8  [deg] Area:         688.14 [km^2]
 
 Flinn-Engdahl Region ( 536 ): CENTRAL NORBOTTEN SWEDEN
 
  Stat  Delta   Azi   Phase   [used]    Onset time    Res     Baz     Res   Rayp   Res  Used      SNR    Amplitude  Period  MAG    Q Em-Ang ARID
 
-ARCES   2.791  29.68 Pb               12 00 55.800  -0.343 212.40   -0.93 14.30  -2.75 TA D     97.80         4.50  0.300         e  62.79 abcdef01
-ARCES   2.791  29.68 Sn               12 01 27.900  -0.038 211.80   -1.53 19.50  -5.23 TA D                                       e  48.36         
-ARCES   2.791  29.68 Sg               12 01 39.500   1.036 207.10   -6.23 28.50  -4.58 TA D                                       e  88.60         
-APA0    4.432  79.03 Pn      Pb       12 01 21.100  -3.086 276.10    6.54 12.80  -4.24 TASD                                       e  62.75         
-APA0    4.432  79.03 S1      Sn       12 02 13.400   5.527 264.90   -4.66 20.60  -4.11 TA D                                       e  48.31         
-APA0    4.432  79.03 Lg      Sb       12 02 20.100  -2.373 249.40  -20.16 27.10  -2.44 T  D                                       e                
-FINES   6.068 159.09 Pn               12 01 39.200   1.659 344.60    1.45 15.00   1.26 TAS                                        e  45.77         
-NORES   7.810 219.05 Pn               12 01 57.800  -2.383  28.60   -1.43 13.40  -0.32 TAS                                        e  45.71         
+ARCES   2.802  28.97 Pn               12 00 55.800   2.374 212.40   -0.15 14.30   0.55 TASD     97.80         4.50  0.300         _  45.84 abcdef01
+ARCES   2.802  28.97 Sn               12 01 27.900  -1.251 211.80   -0.75 19.50  -5.24 TA D                                       _  48.37         
+ARCES   2.802  28.97 Sg               12 01 39.500  -0.270 207.10   -5.45 28.50  -4.59 TA D                                       _  88.60         
+APA0    4.410  78.66 Pn               12 01 21.100   5.826 276.10    6.97 12.80  -0.95  ASD                                       _  45.82         
+APA0    4.410  78.66 S1      Sn       12 02 13.400   5.123 264.90   -4.23 20.60  -4.15 TA D                                       _  48.35         
+APA0    4.410  78.66 Lg               12 02 20.100  -3.938 249.40  -19.73 27.10  -3.95 T                                          _                
+FINES   6.032 159.31 Pn               12 01 39.200   1.223 344.60    1.30 15.00   1.25 TAS                                        _  45.80         
+NORES   7.805 219.40 Pn               12 01 57.800  -3.261  28.60   -1.72 13.40  -0.36 TAS                                        _  45.78         
 
 Defining travel-time differences:
 
  Stat  Delta  Phases           Observed   Res
 
-ARCES   2.791 Sn - Pb            32.100   0.304
-ARCES   2.791 Sg - Pb            43.700   1.379
-ARCES   2.791 Sg - Sn            11.600   1.075
-APA0    4.432 Sn - Pn            52.300   8.613
-APA0    4.432 Lg - Pn            59.000   0.713
-APA0    4.432 Lg - Sn             6.700  -7.900
+ARCES   2.802 Sn - Pn            32.100  -3.625
+ARCES   2.802 Sg - Pn            43.700  -2.644
+ARCES   2.802 Sg - Sn            11.600   0.981
+APA0    4.410 Sn - Pn            52.300  -0.703
 
 Number of usable stations:    4
 
-Maximum azimuthal gap of defining observations: 219.0 ->  29.7 [deg] = 170.6 [deg]
+Maximum azimuthal gap of defining observations: 219.4 ->  29.0 [deg] = 169.6 [deg]; CPQ =  0.445
 
-Maximum secondary azimuthal gap of defining observations: 159.1 ->  29.7 [deg] = 230.6 [deg]
+Maximum secondary azimuthal gap of defining observations: 159.3 ->  29.0 [deg] = 229.7 [deg]; CPQ =  0.157
 
-Residuals of defining data          RMS    MEAN-ERROR      MEAN
-     8 onset times             :    2.630       2.056      0.000  [s]
-     7 backazimuth values      :    3.976       3.253     -0.970  [deg]
-     3 ray parameters          :    2.563       1.944     -1.101  [s/deg]
-     6 travel-time differences :    4.835       3.331      0.697  [s]
+Residuals of defining data          RMS     MEAN-RES       MEAN
+     7 onset times             :    2.956       2.491      0.000  [s]
+     7 backazimuth values      :    3.806       2.939     -0.576  [deg]
+     4 ray parameters          :    0.850       0.776      0.120  [s/deg]
+     4 travel-time differences :    2.323       1.988     -1.498  [s]
 
-Weighted RMS of onset times (ISC type):    2.674 [s]
+Weighted RMS of onset times (ISC type):    2.910 [s]
 
 Weighted misfit of input data         L1      L2
-     8 onset times             :    4.683    6.019
-     8 backazimuth values      :    0.268    0.402
-     8 ray parameters          :    2.096    2.374
-     6 travel-time differences :    5.262    7.667
-    30 misfit over all         :    2.932    4.792
+     8 onset times             :    7.183    9.095
+     8 backazimuth values      :    0.252    0.392
+     8 ray parameters          :    1.509    1.704
+     4 travel-time differences :    3.336    3.956
+    28 misfit over all         :    3.032    5.171
 
 T0                         LAT      LON       Z     VPVS   DLAT     DLON      DZ       DT0    DVPVS DEF    RMS
-1994-04-17 12 00 06.180   67.165   21.575    0.00   0.00   0.1563   0.4589  Fixed     3.725   0.00   24    2.630
+1994-04-17 12 00 07.119   67.137   21.645    0.00   1.80   0.1108   0.3368  Fixed     2.796   0.04   22    2.956

@@ -1,4 +1,6 @@
 NORTHERN MOLUCCA SEA, 1996 29 June, converted from pIDC's Reviewed Event Bulletin (REB)
+* the row above is the title line
+*
 *23456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 123456789 
 *aaaa aaaaaaaa iiii ii ii ii ii ff.fff f.fff fff.ff ff.ff ff.ff ff.ff aaaaaaa ff.fff fffffffff.ff ffff.ff aaaaaaaa ff.ff
 WRA   P        1996 06 29 00 41 44.700 0.300 331.50 20.00 11.10  1.00 TASD_M_  0.300         4.50   97.80 abcdef01  0.10
@@ -26,8 +28,8 @@ ZAL   P        1996 06 29 00 47 09.0   0.300 -999.   0.0  -999.  0.00 T______   
 ABKT  P        1996 06 29 00 48 09.5   0.300 -999.   0.0  -999.  0.00 T______                             abcdef23  0.10
 *
 *NRI   P        1996 06 29 00 48 08.7   0.300 195.9  30.0    3.9  2.00 TAS__M_  0.750         3.00   11.20 abcdef24  0.10
-* Note, the following phase has an irregular phase name! Therefore, we cannot use its onset time
-* or slowness for the inversion.
+* Note, the following phase has an unknow phase name! Therefore, its onset time or slowness cannot be used 
+* for the inversion. However, the backazimuth observation may be usable.
 *
 NRI   x        1996 06 29 00 48 08.7   0.300 195.9  30.0    3.9  2.00 _A___M_  0.750         3.00    11.2 abcdef24  0.10
 MAW   P        1996 06 29 00 49 01.1   0.300 -999.   0.0  -999.  0.00 T______                             abcdef25  0.10

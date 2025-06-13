@@ -4,27 +4,9 @@ setenv HYPOSAT_DATA ../data
 
 \cp ./hyposat-in.$1 hyposat-in
 \cp hyposat-parameter.$1 hyposat-parameter
-##echo "OUTPUT LEVEL                       : 0" >> hyposat-parameter
 
-echo
-echo "RUN " $1
-echo
+../bin/hyposat
 
-#../new/hyposat_l.new
-#\mv hyposat-out hyposat-out.rev
-
-../new/hyposat_l.new
-#../devel/hyposat_l.new
-#../hyposat.6_1b/bin/hyposat
-
-
-echo
-echo "Differences " $1
-echo
-
-#\diff hyposat-out hyposat-out.rev
-#
-#\diff hyposat-out hyposat-out.$1 
 \diff hyposat-out hyposat-out.$1 | more
-#\mv hyposat-out hyposat-out.$1 
+
 exit

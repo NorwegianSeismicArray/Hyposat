@@ -11,17 +11,18 @@ c
 c----------------------------------------------------------------------
 c
 c
-      program HYPOMOD_2_1
+      program HYPOMOD_2_2
 
       implicit real*8 (a-h,o-z)
       implicit integer (i-n)
 
       character  version*25, VDATE*20
-      parameter (version='HYPOMOD Version 2.1      ')
-      parameter (vdate=' ( 17 April 2024) ' )
+      parameter (version='HYPOMOD Version 2.2     ')
+c     parameter (vdate=' ( 27 May 2025)' )
+      parameter (vdate=' ' )
 
 c
-c     last changes:  17 April 2024
+c     last changes:  27 May 2025
 c
 c----------------------------------------------------------------------
 c
@@ -36,7 +37,7 @@ c     All input and output files are identical to hyposat.
 c     See HYPOSAT manual for details. However some features are just
 c     ignored because we do not invert any data!
 c
-c     HYPOMOD 2.1  is based on HYPOSAT 6.1c
+c     HYPOMOD 2.1a is based on HYPOSAT 6.1f
 c
 c--------------------------------------------------------------------
 c
@@ -56,7 +57,7 @@ c                hyposat_gmi, indexx, magfact, mult_ons,
 c                plane, tauget_mod, tauget_ray, testphase, ttloc, zo2to
 c
 c     functions: alpha1, alpha2, convlat, phase_type, phasw,
-c                dirdel, q2, radloc
+c                dirdel, q2, radloc, rdig,
 c                file_checkpara, read_event_id, read_origin, 
 c                read_origin_head, read_phase_head, read_phase, 
 c                write_isf_error, lowcas, uppcas
@@ -76,10 +77,10 @@ c
 c     Functions called: variable definitions
 c
       real*8           alpha1, alpha2, convlat, dirdel, q2, 
-     +                 radloc
+     +                 radloc, rdig
       character        phase_type*1, file_check*512, file_checkpara*512,
-     +                 filepara*512, lowcas*40, uppcas*40, chgcas*40,
-     +                 get_mtyp*3, phasw*8
+     +                 filepara*512, lowcas*1024, uppcas*1024, 
+     +                 chgcas*1024, get_mtyp*3, phasw*8
 
 c
 c     mstat = maximum number of stations
@@ -94,7 +95,7 @@ c
 
       character*5 sta(mstat),stat,stato,statw,stat1,stationfile*512,
      +          statcorfile*512,outputfile*512,inputfile*512,
-     +          magfile*512,magmlfile*512
+     +          magfile*512,magmlfile*512,statfile2*512
 c
 c     mread = maximum number of phases (hypomod-in file)
 c
@@ -107,11 +108,11 @@ c
 
       character phase(mread)*8,phaseu(mread)*8,phid*8,used(mread)*6,
      +          phid2*8,text2(mrd2)*160,phid1*8,phase_t*1,
-     +          string*210,touse(mread)*9,touse0*9,phidr*8,
-     +          o_string*210,textout*160,text(mread)*160,
+     +          string*550,touse(mread)*9,touse0*9,phidr*8,
+     +          o_string*550,textout*160,text(mread)*160,
      +          arid(mread)*8,statcorstr*80, texth*160,phid0*8,
      +          usedm*6,phsearch*1,
-     +          useds*6, usedr*1, usedsr*1
+     +          useds*6, usedr*1, usedsr*1, stringt*30, onflag(mread)*3
 
       dimension azi(mread),tt(mread),p(mread),
      +          period(mread),amplit(mread),
@@ -133,9 +134,9 @@ c
 
       real*4 rzo,rdel,razi,rzo1,rdel1,rmcorr, rdelk
 
-      logical first/.true./
-      real*4  zso/0./
-      character modnamo*20/' '/
+      logical first
+      real*4  zso
+      character modnamo*20
       common /bkin0/first,modnamo,zso
 
 c
@@ -165,7 +166,7 @@ c
 
       character cdum*1, cdum2*20, author*10, onscha*1,cevid*10, cdum3*2,
      +          phisf*10, isf_ref*10, phidd*10, author2*10, 
-     +          corid*8, corid2*8, cpick*1
+     +          corid*8, corid2*8, cpick*1, cpol*1
 
       real*4    rdum, rpa, ramp, rper, rsnr, rlati, rloni, rdepi,
      +          rdum0
@@ -183,7 +184,7 @@ c
      +          y00, mon00, d00, h00, ierc
 
       character mm*4,name*48
-      real*8    lat,lon,dlati,dloni,ddepi, elevs
+      real*8    lat,lon,dlati,dloni,ddepi, elevs, cpq, cpq2
       real*4    sec, rlat, rlon, smag
 
       character title*140, czo*1, region*80, czo1*1, magtypp*3, 
@@ -197,9 +198,9 @@ c
      +          magflag, wflag,
      +          conr, rayok, 
      +          kmout, thbaz, thray, 
-     +          isf_in, freeph, ref_eve, 
+     +          isf_in, freeph, ref_eve,
      +          pflag, lgflag, sgflag, aziflag,
-     +          sloflag, gapobs, isf_epi, 
+     +          sloflag, isf_epi, 
      +          firstph, first2, ldepth0,
      +          old_syntax, emerout, larid, 
      +          primef, 
@@ -208,6 +209,9 @@ c
 c
 c     some constants and initial or default values
 c
+      first = .true.
+      zso   = 0. 
+      modnamo = '                    '
 
       pi      = 4.d0*datan(1.d0)
       deg2rad = pi / 180.d0
@@ -248,7 +252,6 @@ c
       sgflag   = .false.
       aziflag  = .true.
       sloflag  = .true.
-      gapobs  = .false.
       firstph = .false.
       emerout = .false.
 
@@ -317,9 +320,9 @@ c
       vi      = vi0
 
       lmaxm   = .true.
-      magtypp  = ' '
-      magtyps  = ' '
-      magtypml = ' '
+      magtypp  = 'G-R'
+      magtyps  = 'IASPEI'
+      magtypml = 'Bath'
       magmlfile = 'MLCORR.TABLE'
 
       delmbmin = 0.d0
@@ -327,7 +330,7 @@ c
       delmsmin = 0.d0
       delmsmax = 180.d0
       delmlmin = 0.d0
-      delmlmax = 180.d0
+      delmlmax = 20.d0
 
 c
 c     search file 'hyposat-parameter'
@@ -344,35 +347,45 @@ c
 c     read in steering parameters from parameter file (if found)
 c
 
-      do 1 jin = 1,1000
+      do 1 jin = 1,2000
 
       read (9,'(a)',end=2) string
 
-      chgcas = uppcas(string(1:35))
-      string(1:35) = chgcas(1:35)
+      string = adjustl(string)
 
-      if(string(1:1).eq.' ') go to 1
+      if(string.eq.' ') go to 1
       if(string(1:1).eq.'*') go to 1
       if(string(1:1).eq.'?') go to 1
-      if(string(36:37).ne.': ') then
+
+      icolon = index(string,':')
+
+      if(icolon.gt.0) then
+         icolon1 = icolon-1
+         chgcas = uppcas(string(1:icolon1))
+         string(1:icolon1) = chgcas(1:icolon1)
+      else
          print *,' Wrong syntax (ignored): ',trim(string)
          go to 1
       endif
 
-      if(string(1:14).eq.'GLOBAL MODEL  ') then
-          read (string(38:),'(a)') modnam(1)
-          mtype(1) = get_mtyp(modnam(1))
-          go to 1
+      if(string(icolon+1:icolon+1).ne.' ') then
+         print *,' Wrong syntax (ignored): ',trim(string)
+         go to 1
       endif
 
-      if(string(1:14).eq.'GLOBAL MODEL 1') then
-          read (string(38:),'(a)') modnam(1)
+      icolon2 = icolon+2
+
+      if(string(1:14).eq.'GLOBAL MODEL 1' .or.
+     +   (string(1:12).eq.'GLOBAL MODEL' .and. string(13:14).ne.' 2'
+     +    .and. string(13:14).ne.' 3' .and. string(13:14).ne.' 4')
+     +     ) then
+          read (string(icolon2:),'(a)') modnam(1)
           mtype(1) = get_mtyp(modnam(1))
           go to 1
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 2') then
-          read (string(38:),'(a)') modnam(2)
+          read (string(icolon2:),'(a)') modnam(2)
           if(modnam(2) .ne. '_' .and. modnam(2).ne.' ') then
             modflag(2) = .true.
             imodn(2) = 1
@@ -386,7 +399,7 @@ c
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 3') then
-          read (string(38:),'(a)') modnam(3)
+          read (string(icolon2:),'(a)') modnam(3)
           if(modnam(3) .ne. '_' .and. modnam(3).ne.' ') then
             modflag(3) = .true.
             imodn(3) = 1
@@ -400,7 +413,7 @@ c
       endif
 
       if(string(1:14).eq.'GLOBAL MODEL 4') then
-          read (string(38:),'(a)') modnam(4)
+          read (string(icolon2:),'(a)') modnam(4)
           if(modnam(4) .ne. '_' .and. modnam(3).ne.' ') then
             modflag(4) = .true.
             imodn(4) = 1
@@ -413,20 +426,15 @@ c
           go to 1
       endif
 
-      if(string(1:25).eq.'GLOBAL CRUSTAL MODEL CODE') then
-          read (string(38:),'(a)') mtyp0
-          go to 1
-      endif
-
       if(string(1:23).eq.'LOCAL OR REGIONAL MODEL') then
-          read (string(38:),'(a)') filloc
+          read (string(icolon2:),'(a)') filloc
           go to 1
       endif
 
       if(string(1:19).eq.'VERY LOCAL GEOMETRY') then
           intinp = 0
           locgeo = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) locgeo = .true.
           go to 1
       endif
@@ -434,27 +442,30 @@ c
       if(string(1:27).eq.'LOCAL STATION BELOW SURFACE') then
           intinp = 0
           locsta = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) locsta = .true.
+          read (string(icolon2:),*) intinp
+          if(intinp.eq.1) then
+            locsta = .true.
+            locgeo = .true.
+          endif
           go to 1
       endif
 
       if(string(1:24).eq.'OUTPUT OF REGIONAL MODEL') then
           intinp = 0
           modout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) modout = .true.
           go to 1
       endif
 
-      if(string(1:10).eq.'CRUST 5.1 ') then
+      if(string(1:9).eq.'CRUST 5.1') then
           print *, 'WARNING: CRUST 5.1 not longer supported,'
           print *, 'we try to use newer CRUST 1.0 instead!'
           string(1:10) = 'CRUST 1.0 '
       endif
 
-      if(string(1:11).eq.'CRUST 1.0  ') then
-          read (string(38:),*) imo
+      if(string(1:9).eq.'CRUST 1.0') then
+          read (string(icolon2:),*) imo
           if(imo.lt.0) imo = 0
           if(imo.gt.6) then
              print *, 'WARNING: Wrong CRUST 1.0 parameter!, set to 0'
@@ -464,22 +475,28 @@ c
       endif
 
       if(string(1:12).eq.'STATION FILE') then
-          read (string(38:),'(a)') stationfile
+          read (string(icolon2:),'(a)') stationfile
           stationfile = file_check(stationfile)
+          go to 1
+      endif
+
+      if(string(1:24).eq.'ALTERNATIVE STATION FILE') then
+          read (string(icolon2:),'(a)') statfile2
+          stationfile = file_check(statfile2)
           go to 1
       endif
 
       if(string(1:19).eq.'STATION CORRECTIONS') then
           intinp = 0
           vlflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) vlflag = .true.
           go to 1
       endif
 
       if(string(1:23).eq.'STATION CORRECTION FILE') then
           stcorfl = .false.
-          read (string(38:),'(a)') statcorfile
+          read (string(icolon2:),'(a)') statcorfile
           if(len_trim(statcorfile).gt.0 .and.
      +        trim(statcorfile).ne.'_'   ) then
               statcorfile = file_check(statcorfile)
@@ -491,19 +508,19 @@ c
       if(string(1:27).eq.'STATION CORR ONLY 1ST PHASE') then
           intinp = 0
           firstph = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) firstph = .true.
           go to 1
       endif
 
       if(string(1:31).eq.'P-VELOCITY TO CORRECT ELEVATION') then
-          read (string(38:),*) vpl
+          read (string(icolon2:),*) vpl
           if(vpl.gt.99.d0 .or. vpl.lt.1.d-3) vpl=5.8d0
           go to 1
       endif
 
       if(string(1:31).eq.'S-VELOCITY TO CORRECT ELEVATION') then
-          read (string(38:),*) vsl
+          read (string(icolon2:),*) vsl
           if(vsl.gt.99.d0) vsl=3.46d0
           if(vsl.lt.1.d-3) then
              if(vsl.gt.-1.d-3 .and. (vpl.ge.2.d-3 .and. vpl.le.99.d0))
@@ -519,17 +536,19 @@ c
       if(string(1:20).eq.'STARTING SOURCE TIME') then
 c
 c     time formats supported: epochal time 
-c          or ASCII formated: yyyy-doy:hh.mi.ss.sss
-c                             yyyy-mm-dd:hh.mi.ss.sss
+c          or ASCII formated: yyyy-doy?hh?mi?ss.sss
+c                             yyyy-mm-dd?hh?mi?ss.sss
 c
 c          seconds may be omitted
 c
-          if(string(38:38) .eq. '_') go to 1
-          if(string(38:38) .eq. '0') go to 1
-          if(string(38:39) .eq. '0.') go to 1
-          
-          if(string(42:42).ne.'-') then
-             read (string(38:),*) timein
+          stringt = string(icolon2:icolon2+29)
+
+          if(stringt(1:1) .eq. '_') go to 1
+          if(stringt(1:1) .eq. '0') go to 1
+          if(stringt(1:2) .eq. '0.') go to 1
+
+          if(stringt(5:5).ne.'-') then
+             read (stringt,*) timein
              if(timein.gt.tome0) tome0 = timein
           else
 
@@ -542,22 +561,29 @@ c
             mi   = 0
             sec  = 0.
 
-            if(string(45:45).ne.'-') then
-               if(len_trim(string).lt.51) then
-                  print *,'Check format for source time in',
+            if(stringt(8:8).ne.'-') then
+               if(len_trim(stringt).lt.14) then
+                  print *,'Check format for source time in ',
      +                    'hyposat-parameter file'
                   go to 9999
                endif
-              read (string(38:51),'(i4,x,i3,2(x,i2))') yy,idoy,hh,mi
-              if(len_trim(string).gt.52) read (string(53:),*) sec
+              read (stringt(1:14),'(i4,x,i3,2(x,i2))') yy,idoy,hh,mi
+              if(len_trim(stringt).gt.15) read (stringt(16:),*) sec
             else
-              if(len_trim(string).lt.53) then
-                  print *,'Check format for source time in',
-     +                    'hyposat-parameter file'
+              if(len_trim(stringt).lt.16) then
+                 print *,'Check format for source time in ',
+     +                   'hyposat-parameter file'
                  go to 9999
               endif
-              read (string(38:53),'(i4,4(x,i2))') yy,mon,dd,hh,mi
-              if(len_trim(string).gt.54) read (string(55:),*) sec
+              read (stringt(1:16),'(i4,4(x,i2))') yy,mon,dd,hh,mi
+              if(len_trim(stringt).gt.17) read (stringt(18:),*) sec
+            endif
+
+            if(sec.ge.60.0) then
+               print *,'Check format for source time in ',
+     +                 'hyposat-parameter file, seconds >= 60'
+               print *,'Source time: ',yy,mon,dd,hh,mi,sec
+               go to 9999
             endif
 
             call fhtoe(tome0,idum,yy,mon,mm,dd,idoy,hh,mi,sec)
@@ -567,26 +593,26 @@ c
       endif
 
       if(string(1:21).eq.'STARTING SOURCE DEPTH') then
-          read (string(38:),*) zo1
+          read (string(icolon2:),*) zo1
           go to 1
       endif
 
       if(string(1:24).eq.'STARTING SOURCE LATITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-90.d0 .and. abc.le.90.d0) epilat0 = abc
           go to 1
       endif
 
       if(string(1:25).eq.'STARTING SOURCE LONGITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-180.d0 .and. abc.le.180.d0) epilon0 = abc
           go to 1
       endif
 
       if(string(1:12).eq.'OUTPUT LEVEL') then
-          read (string(38:),*) typctl
+          read (string(icolon2:),*) typctl
           if(typctl.lt.-1)   typctl = 0
           if(typctl.ge.40)  typctl = 4
           if(typctl.gt.10) then
@@ -597,25 +623,17 @@ c
           go to 1
       endif
 
-      if(string(1:30).eq.'AZIMUTHAL GAP FOR OBSERVATIONS') then
-          intinp = 0
-          gapobs = .false.
-          read (string(38:),*) intinp
-          if(intinp.eq.1) gapobs = .true.
-          go to 1
-      endif
-
       if(string(1:27).eq.'FLAG EMERGENCE ANGLE OUTPUT') then
           intinp = 0
           emerout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) emerout = .true.
           go to 1
       endif
 
       if(string(1:16).eq.'SLOWNESS [S/DEG]') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.0 .or. intinp.eq.1) islow = intinp
           if(isf_in) islow = 1
           go to 1
@@ -624,7 +642,7 @@ c
       if(string(1:34).eq.'FLAG USING TRAVEL-TIME DIFFERENCES') then
           intinp = 0
           diffflag = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) diffflag = .false.
           go to 1
       endif
@@ -632,21 +650,22 @@ c
       if(string(1:22).eq.'FLAG FREE PHASE SEARCH') then
           intinp = 0
           freeph = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) freeph = .true.
           go to 1
       endif
 
       if(string(1:15).eq.'INPUT FILE NAME') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                        read (string(38:),*) inputfile
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) inputfile
           go to 1
       endif
 
       if(string(1:21).eq.'HYPOSAT-IN OLD SYNTAX') then
           intinp = 0
           old_syntax = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) old_syntax = .true.
           go to 1
       endif
@@ -654,7 +673,7 @@ c
       if(string(1:16).eq.'INPUT FORMAT ISF') then
           intinp = 0
           isf_in = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) then
              isf_in = .true.
              islow = 1
@@ -663,7 +682,7 @@ c
       endif
 
       if(string(1:22).eq.'ISF REFERENCE LOCATION') then
-          read (string(38:),'(a)') isf_ref 
+          read (string(icolon2:),'(a)') isf_ref 
           if(isf_ref.eq.'_') isf_ref = ' '
           go to 1
       endif
@@ -671,50 +690,51 @@ c
       if(string(1:13).eq.'ISF EPICENTER') then
           intinp = 0
           isf_epi = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) isf_epi=.true.
           go to 1
       endif
 
       if(string(1:22).eq.'ISF_2ND MODEL DISTANCE') then
           abc = -999.d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.gt.0.d0 .and. abc.le.180.d0) disfmod = abc
           go to 1
       endif
 
       if(string(1:12).eq.'ISF EVENT ID') then
           lc = len_trim(string)
-          read (string(38:lc),*) cevid
+          read (string(icolon2:lc),*) cevid
           lc = len_trim(cevid)
           if(lc.lt.10) then
              cevid = ' '
-             cevid(10-lc+1:10) = string(38:38+lc-1)
+             cevid(10-lc+1:10) = string(icolon2:icolon2+lc-1)
           endif
           go to 1
       endif
 
       if(string(1:13).eq.'ISF ORIGIN ID') then
           lc = len_trim(string)
-          read (string(38:lc),*) corid
+          read (string(icolon2:lc),*) corid
           lc = len_trim(corid)
           if(lc.lt.8) then
              corid = ' '
-             corid(8-lc+1:8) = string(38:38+lc-1)
+             corid(8-lc+1:8) = string(icolon2:icolon2+lc-1)
           endif
           go to 1
       endif
 
       if(string(1:16).eq.'OUTPUT FILE NAME') then
-          if(string(38:38).ne.' ' .and. string(38:38) .ne.'_')
-     +                        read (string(38:),*) outputfile
+          if(string(icolon2:icolon2).ne.' ' .and. 
+     +       string(icolon2:icolon2) .ne.'_'  )
+     +       read (string(icolon2:),*) outputfile
           go to 1
       endif
 
       if(string(1:13).eq.'OUTPUT SWITCH') then
           intinp = 0
           output = .true.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.ne.1) output=.false.
           go to 1
       endif
@@ -722,7 +742,7 @@ c
       if(string(1:12).eq.'OUTPUT IN KM') then
           intinp = 0
           kmout = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) kmout = .true.
           go to 1
       endif
@@ -731,7 +751,7 @@ c
           intinp = 0
           thbaz = .false.
           thray = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) thbaz = .true.
           if(intinp.eq.2) thray = .true.
           if(intinp.eq.3) then
@@ -742,49 +762,51 @@ c
       endif
 
       if(string(1:18).eq.'AUTHOR OF SOLUTION') then
-          read (string(38:),'(a)') author
+          read (string(icolon2:),'(a)') author
           go to 1
       endif
 
       if(string(1:17).eq.'LG GROUP-VELOCITY') then
-         read (string(38:),*) vlg
+         read (string(icolon2:),*) vlg
          if(vlg.le.0.d0) vlg = vlg0
          go to 1
       endif
 
       if(string(1:17).eq.'RG GROUP-VELOCITY') then
-          read (string(38:),*) vrg
+          read (string(icolon2:),*) vrg
           if(vrg.le.0.d0) vrg = vrg0
           go to 1
       endif
 
       if(string(1:17).eq.'LR GROUP-VELOCITY') then
-          read (string(38:),*) vlr
+          read (string(icolon2:),*) vlr
           if(vlr.le.0.d0) vlr = vlr0
           go to 1
       endif
 
       if(string(1:17).eq.'LQ GROUP-VELOCITY') then
-          read (string(38:),*) vlq
+          read (string(icolon2:),*) vlq
           if(vlq.le.0.d0) vlq = vlq0
           go to 1
       endif
 
-      if(string(1:17).eq.'T PHASE GROUP-VEL') then
-          read (string(38:),*) vt
+      if(string(1:17).eq.'T-PHASE GROUP-VEL' .or.
+     +   string(1:17).eq.'T PHASE GROUP-VEL') then
+          read (string(icolon2:),*) vt
           if(vt.le.0.d0) vt = vt0
           go to 1
       endif
 
-      if(string(1:18).eq.'IS PHASE GROUP-VEL') then
-          read (string(38:),*) vi
+      if(string(1:18).eq.'IS-PHASE GROUP-VEL' .or.
+     +   string(1:18).eq.'IS PHASE GROUP-VEL') then
+          read (string(icolon2:),*) vi
           if(vi.le.0.d0) vi = vi0
           go to 1
       endif
 
       if(string(1:18).eq.'WATER LAYER ON TOP') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.gt.0 .and. intinp.lt.6) iwl = intinp
           go to 1
       endif
@@ -792,99 +814,100 @@ c
       if(string(1:21).eq.'MAGNITUDE CALCULATION') then
           intinp = 0
           magflag = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) magflag = .true.
           go to 1
       endif
 
       if(string(1:22).eq.'ALL STATION MAGNITUDES') then
           intinp = 0
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) lmaxm = .false.
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR MS') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmsmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR MB') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmbmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MIN DISTANCE FOR ML') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmlmin = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR MS') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmsmax = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR MB') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmbmax = abc
           go to 1
       endif
 
       if(string(1:19).eq.'MAX DISTANCE FOR ML') then
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.0.d0) delmlmax = abc
           go to 1
       endif
 
       if(string(1:19).eq.'P-ATTENUATION MODEL' .or.
      +   string(1:17).eq.'ATTENUATION MODEL'    ) then
-          read (string(38:),*) magtypp
+          read (string(icolon2:),*) magtypp
           go to 1
       endif
 
-      if(string(1:20).eq.'MS-ATTENUATION MODEL') then
-          read (string(38:),*) magtyps
+      if(string(1:20).eq.'MS-ATTENUATION MODEL' .or.
+     +   string(1:19).eq.'S-ATTENUATION MODEL') then
+          read (string(icolon2:),*) magtyps
           go to 1
       endif
 
       if(string(1:20).eq.'ML-ATTENUATION MODEL') then
-          read (string(38:),*) magtypml
+          read (string(icolon2:),*) magtypml
           go to 1
       endif
 
       if(string(1:18).eq.'ML-CORRECTION FILE') then
-          read (string(38:),*) magmlfile
+          read (string(icolon2:),*) magmlfile
           go to 1
       endif
 
       if(string(1:15).eq.'REFERENCE EVENT') then
           intinp = 0
           ref_eve = .false.
-          read (string(38:),*) intinp
+          read (string(icolon2:),*) intinp
           if(intinp.eq.1) ref_eve = .true.
           go to 1
       endif
 
       if(string(1:26).eq.'REFERENCE SOURCE LONGITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-180.d0 .and. abc.le.180.d0) dloni = abc
           go to 1
       endif
 
       if(string(1:25).eq.'REFERENCE SOURCE LATITUDE') then
           abc = -999.0d0
-          read (string(38:),*) abc
+          read (string(icolon2:),*) abc
           if(abc.ge.-90.d0 .and. abc.le.90.d0) dlati = abc
           go to 1
       endif
 
       if(string(1:22).eq.'REFERENCE SOURCE DEPTH') then
-          read (string(38:),*) ddepi
+          read (string(icolon2:),*) ddepi
           go to 1
       endif
 
@@ -1077,7 +1100,7 @@ c
       if(output) then
          open (unit=11,file=outputfile)
          write (11,'(a,/)') trim(title)
-         write (11,'(''Event solution by '',a,/)') 
+         write (11,'(''Event solution by input from '',a,/)') 
      +          trim(author)
       endif
 
@@ -1215,6 +1238,7 @@ c
       period(ii) = -999.d0
       touse0  = 'TASDRM1  '
       arid(ii)= ' '
+      onflag(ii) = '___'
 
       if(.not.isf_in) then
 
@@ -1272,11 +1296,11 @@ c
           if(lstring.ge.ipos) then
 
              if(old_syntax) then
-                read (string(ipos:ipo2),'(a6)',err=5) touse0
+                read (string(ipos:ipo2),'(a6)',err=5) touse0(1:6)
                 touse0(7:7) = touse0(6:6)
                 touse0(6:6) = 'M'
              else
-                read (string(ipos:ipo2),'(a7)',err=5) touse0
+                read (string(ipos:ipo2),'(a7)',err=5) touse0(1:7)
              endif
 
              chgcas = uppcas(touse0)
@@ -1351,11 +1375,13 @@ c
       else
 
           onscha = ' '
+          cpick = '_'
+          cpol = '_'
 
           if(string(21:23).eq.' DI') string(21:23) = '_DI'
           itest = read_phase (string(1:123),stat,rdum0,rdum,phisf,hh,mi,
      +    isec,msec,rdum,razi,rdum,rpa,rdum,touse0(1:1),touse0(2:2),
-     +    touse0(3:3),rsnr,ramp,rper,cpick,cdum,onscha,cdum2,cdum,
+     +    touse0(3:3),rsnr,ramp,rper,cpick,cpol,onscha,cdum2,cdum,
      +    smag,arid(ii))
 
           if(itest.eq.20) then 
@@ -1372,7 +1398,8 @@ c
           chgcas = lowcas(onscha)
           onscha = chgcas(1:1)
 
-          if(onscha.ne.'i' .and. onscha.ne.'e') onscha='_'
+          if(onscha.ne.'i' .and. onscha.ne.'e' .and. onscha.ne.'q') 
+     +       onscha='_'
 
           sec = real(isec)
           if(msec.ne.isf_null) then
@@ -1424,6 +1451,10 @@ c
              endif
              onscha='e'
           endif
+
+          onflag(ii)(1:1) = cpick
+          onflag(ii)(2:2) = cpol
+          onflag(ii)(3:3) = onscha
 
           chgcas = uppcas(phisf(1:3))
           if(phisf(1:2).eq.'P ') phisf='P1'
@@ -1702,6 +1733,7 @@ c     print*, timeo,jdate,yy,mon,mm,dd,idoy,hh,mi,sec
 7         statcorstr = ' '
           read (13,'(a)',end=81,err=81) statcorstr
           if(statcorstr(1:1).eq.'*') go to 7
+          if(len(trim(statcorstr)).eq.0) go to 7
 
           read(statcorstr,*,err=801,end=801) stat1,vpc,vsc,spc,ssc,src
           go to 69
@@ -1993,6 +2025,7 @@ c
       phaseu(i) = phase(i)
       useds = used(i)
       usedm = ' '
+      usedsr = ' '
 
       if(sta(iev(i)).ne.stato) then
 
@@ -2154,6 +2187,7 @@ c
          phcd(nphas) = phid
          dddp(nphas) = 0.d0
          dpdh(nphas) = 0.d0
+         phsearch = 'L'
       endif
       nphass = nphas
       surfm = surf
@@ -2179,8 +2213,7 @@ c
       phid1 = phcd(j)
 
       phase_t = phase_type(phid1)
-      if((phsearch.eq.'P' .and. phase_t.ne.'P') .or.
-     +   (phsearch.eq.'S' .and. phase_t.ne.'S') ) go to 420
+      if(phsearch.ne.' ' .and. phsearch.ne.phase_t) go to 420
 
       dpa   = 0.d0
       dpaa  = 0.d0
@@ -2347,7 +2380,6 @@ c
          delr2  = 0.d0
          dpr    = 0.d0
          usedr = ' '
-
 
          if( .not.surff .and. (useds(5:5).eq.'R' .or.
      +       (touse(i)(5:5).eq.'R' .and. useds(5:5).eq.' ' .and. 
@@ -2561,10 +2593,22 @@ c
             if(index(phaseu(i),'w').gt.0) wflag = .true.
 
             if(phase(i)(1:3).eq.'tx ' .or. used(i)(1:1).eq.' ') then
+
                if(iwl.eq.1) then
                   wflag = .true.
-               else 
-                  if(dabs(dtt2).lt.dabs(ttres)) wflag = .true.
+               else
+                  if(dabs(dtt2).lt.dabs(ttres)) then
+                     if(iwl.eq.2) then
+                        wflag = .true.
+                     else if(iwl.eq.3) then
+                        if(dabs(fdt).ge.dtdw ) wflag = .true.
+                     else if(iwl.eq.4) then
+                        wflag = .true.
+                        if(dabs(fdt).ge.dtdw)  wflag = .false.
+                     else if(iwl.eq.5) then
+                        if(index(phase(i),'w').gt.0) wflag=.true.
+                     endif
+                  endif
                endif
             endif
 
@@ -2573,7 +2617,7 @@ c
               trefl  = trefl2
               tttn   = tttn + fdt
               phid1  = phasw(phid1)
-              ttres  = ttobs - tttn
+              ttres  = dtt2
             endif
 
          endif
@@ -2587,7 +2631,7 @@ c
             dpaa = dabs(dpa)
          endif
 
-         dtnew = dabs(tttn-tome-ttt(i))
+         dtnew = dabs(tttn-tome-ttt(i)+tom)
 
          if(typctl.gt.8) then
            print *,'phid1, i, tttn, t0, j, phase, TT, ECOR, Height,',
@@ -2599,13 +2643,19 @@ c
 
          ttres1 = dabs(ttc(j) - ttc(1))
          if(rdel.gt.113. .and. phcd(1)(1:3).eq.'Pdi' .and.
-     +                         ttres1.gt.200.d0        ) then
-           if(phcd(2)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(2))
-           if(phcd(3)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(3))
-           if(phcd(4)(1:2).eq.'PK') ttres1 = dabs(ttc(j) - ttc(4))
+     +                         ttres1.gt.50.d0        ) then
+           if(phcd(2)(1:2).eq.'PK' .and. j.ge.2) then
+              ttres1 = dabs(ttc(j) - ttc(2))
+              go to 419
+           else if(phcd(3)(1:2).eq.'PK' .and. j.ge.3) then
+              ttres1 = dabs(ttc(j) - ttc(3))
+              go to 419
+           else if(phcd(4)(1:2).eq.'PK' .and. j.ge.4) then
+              ttres1 = dabs(ttc(j) - ttc(4))
+           endif
          endif
 
-         if(dabs(ttres).lt.dabs(dtmin)) then
+419      if(dabs(ttres).lt.dabs(dtmin)) then
             phid2 = phid1
             dtmin = ttres
             dtnew2 = dtnew
@@ -2619,12 +2669,14 @@ c
             surfm = surff
          endif
 
-         do 419  j2 = j+1,nphass
-            if(phid .eq. phcd(j2)) then
-              j = j2 - 1
-              go to 420
-            endif
-419      continue
+         if(useds(1:1).eq.'2' .or. useds(1:1).eq.'3') then
+            do 4191  j2 = j+1,nphass
+               if(phid .eq. phcd(j2)) then
+                 j = j2 - 1
+                 go to 420
+               endif
+4191        continue
+         endif
 
          if(imin.eq.0 ) go to 422
 
@@ -2792,10 +2844,14 @@ c    +         fac,emeran(i)
         statw = chgcas(1:5)
       endif
 
-433   write(text(i),'(a5,f8.3,f7.2,1x,a8,8x,2i3.2,f7.3,f8.3,
+433   continue
+      ttres0 = rdig(ttres,3)
+      azires0 = rdig(azires,2)
+      pares0 = rdig(pares,2)
+      write(text(i),'(a5,f8.3,f7.2,1x,a8,8x,2i3.2,f7.3,f8.3,
      +                f7.2,f8.2,f6.2,f7.2,1x,a5,a1)') 
      +                statw,rdel,razi,phase(i),hh,mi,sec,
-     +                ttres,azi(i),azires,p(i),pares,useds(1:5),cmod
+     +                ttres0,azi(i),azires0,p(i),pares0,useds(1:5),cmod
       
       if(kmout) write(text(i)(6:13),'(f8.2)') rdelk
 
@@ -2858,9 +2914,7 @@ c    +         fac,emeran(i)
          write (text(i)(115:121),'(1x,f6.3)') period(i)
       endif
 
-      onscha = '_'
-
-      text(i)(131:131) = onscha
+      text(i)(131:131) = onflag(i)(3:3)
 
       istmag(i) = 0
 
@@ -3096,26 +3150,21 @@ c     We will now calculate the maximum azimuthal gaps for
 c        - all as defining used observations
 c        - all observations
 c
-c     If possible, also the secondary azimuthal gap is calculated
+c     If possible, also the secondary azimuthal gap is calculated and
+c     the CPQ parameter.
 c
 
       dazgap = 360.
       dazgap2 = 360.
-      if(nstat.gt.1) then
 
-         if(.not.gapobs) then
+      cpq  = 0.d0
+      cpq2 = 0.d0
+
+      if(nstat.gt.1) then
 
            call indexx(nobs,epiaz,indx)
            call azigap(epiaz,dazgap,d1azi,d2azi,dazgap2,d1azi2,
-     +                 d2azi2,nobs,indx)
-
-         else
-
-           call indexx(nobs,epiaz2,indx)
-           call azigap(epiaz2,dazgap,d1azi,d2azi,dazgap2,d1azi2,
-     +                 d2azi2,nobs,indx)
-
-         endif
+     +                 d2azi2,cpq,cpq2,nobs,indx,mread)
 
       endif
 
@@ -3372,6 +3421,9 @@ c
             endif
 
             if(dabs(dtres).lt.1000.d0) then
+
+               dtres = rdig(dtres,3)
+
                if(kmout) then
                   write(text(i2),'(a5,f8.2,1x,a16,f9.3,f8.3)') 
      +                  statw,delk(iev(i)),art,dtobs,dtres
@@ -3412,41 +3464,24 @@ c
       in = nobst + nobsp + nobsa + ndmisf
 
       if(output) then
+
          write(11,'(/''Number of usable stations: '',i4)') nstat
-      endif
 
-      if(nstat.gt.1) then
-       if(output) then
-         if(.not.gapobs) then
-              write(11,'(/''Maximum azimuthal gap of defining '',
-     +        ''observations: '',f5.1,'' -> '',f5.1,'' [deg]'',
-     +        '' = '',f5.1,'' [deg]'')') d1azi,d2azi,dazgap
-         else
-              write(11,'(/''Maximum azimuthal gap for all '',
-     +        ''observing stations: '',f5.1,'' -> '',f5.1,'' [deg]'',
-     +        '' = '',f5.1,'' [deg]'')') d1azi,d2azi,dazgap
+         if(nstat.gt.1) then
+            write(11,'(/''Maximum azimuthal gap of all '',
+     +        ''observations: '',f5.1,'' -> '',f5.1,'' [deg] = '',
+     +        f5.1,'' [deg] CPQ ='',f7.3)') d1azi,d2azi,dazgap,cpq
          endif
-       endif
-      endif
 
-      if(nstat.gt.2) then
-       if(output) then
-          if(.not.gapobs) then
-               write(11,'(/''Maximum secondary azimuthal gap of '',
-     +         ''defining observations: '',f5.1,'' -> '',f5.1,
-     +         '' [deg] = '',f5.1,'' [deg]'')') d1azi2,d2azi2,dazgap2
-          else
-               write(11,'(/''Maximum secondary azimuthal gap for '',
-     +         ''all observing stations: '',f5.1,'' -> '',f5.1,
-     +         '' [deg] = '',f5.1,'' [deg]'')') d1azi2,d2azi2,dazgap2
-          endif
-       endif
-      endif
-
+         if(nstat.gt.2) then
+             write(11,'(/''Maximum secondary azimuthal gap of all '',
+     +         ''observations: '',f5.1,'' -> '',f5.1,
+     +         '' [deg] = '',f5.1,'' [deg] CPQ ='',f7.3)') d1azi2,
+     +         d2azi2,dazgap2,cpq2
+         endif
 c
 c     output of mean residuals
 c
-      if(output) then
          write(11,'(/''Residuals of defining data'',10x,
      +               ''RMS     MEAN-RES       MEAN'')')
 
@@ -3489,11 +3524,6 @@ c     output of one line with all calculated source parameters and
 c     quality parameters
 c
 
-      if(output) then
-         write(11,'(/''T0'',25x,''LAT'',6x,''LON'',7x,''Z'',5x,
-     +      ''VPVS'',3x,''DLAT'',5x,''DLON'',6x,''DZ'',7x,''DT0'',4x,
-     +      ''DVPVS DEF'',4x,''RMS'' )' )
-      endif
       if(typctl.ge.0) then
          write(*,'(/''T0'',25x,''LAT'',6x,''LON'',7x,''Z'',5x,
      +      ''VPVS'',3x,''DLAT'',5x,''DLON'',6x,''DZ'',7x,''DT0'',4x,
@@ -3506,19 +3536,24 @@ c
       isec  = isec1/1000
       msec = isec1-isec*1000
 
-        if(output) then
+      if(output) then
+
+         write(11,'(/''T0'',25x,''LAT'',6x,''LON'',7x,''Z'',5x,
+     +      ''VPVS'',3x,''DLAT'',5x,''DLON'',6x,''DZ'',7x,''DT0'',4x,
+     +      ''DVPVS DEF'',4x,''RMS'' )' )
+
            write(11,'(i4,''-'',i2.2,''-'',i2.2,3i3.2,''.'',i3.3,
      +           2f9.3,f8.2,f7.2,2f9.4,a8,f9.3,f7.2,i5,f9.3)') 
      +           yy,mon,dd,hh,mi,isec,msec,elatmg,elonm,zo,0.,
      +           0.,0.,'  Fixed ',0.,0.,in,rms
-        endif
+      endif
 
-        if(typctl.ge.0) then
+      if(typctl.ge.0) then
            write(*,'(i4,''-'',i2.2,''-'',i2.2,3i3.2,''.'',i3.3,
      +        2f9.3,f8.2,f7.2,2f9.4,a8,f9.3,f7.2,i5,f9.3)') 
      +        yy,mon,dd,hh,mi,isec,msec,elatmg,elonm,zo,0.,
      +           0.,0.,'  Fixed ',0.,0.,in,rms
-        endif
+      endif
 
       if(ref_eve .and. output) then
 

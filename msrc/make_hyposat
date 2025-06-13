@@ -20,17 +20,15 @@
 
 echo
 
-setenv UNIXVERS `uname -s`
+setenv LINUXVERS `uname -s`
 setenv HOSTNAME `hostname`
 
-echo make_hyposat $1 for $HOSTNAME running $UNIXVERS
+echo make_hyposat $1 for $HOSTNAME running $LINUXVERS
 
-if ( $UNIXVERS != 'Linux' ) then
+if ( $LINUXVERS != 'Linux' ) then
 	echo "Unknow operation system"
 	exit
 endif
-
-setenv M "l"
 
 #
 #  start of FORTRAN compiler specific lines
@@ -84,6 +82,7 @@ setenv M "l"
 	setenv CPPFLAG  "-std=gnu++11"
 
 	setenv LDPP "-lstdc++"
+
 #
 ## for linkage
 #
@@ -94,7 +93,7 @@ setenv M "l"
 ## for optimizing
 #
 
-	#setenv OPT "-O3"
+#	setenv OPT "-O3"
 	setenv OPT "-O3 -ftree-loop-distribution -floop-block -floop-strip-mine -floop-interchange"
 
 

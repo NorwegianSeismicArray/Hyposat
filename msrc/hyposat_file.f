@@ -9,6 +9,8 @@ c     26 October 2000
 c
 c     last changes: 10 September 2013
 c
+c     Johannes Schweitzer
+c
 
       character*(*) name
       character*512 path, envvar, file, file_check
@@ -85,6 +87,8 @@ c
 c     5 November 2003
 c
 c     last changes: 10 September 2013
+c
+c     Johannes Schweitzer
 c
 
       character*512 path, envvar, file_checkpara, file1, file2
