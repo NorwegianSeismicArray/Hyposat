@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 unset HYPOSAT_DATA
 export HYPOSAT_DATA="../data"
