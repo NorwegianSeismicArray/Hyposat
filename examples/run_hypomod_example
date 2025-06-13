@@ -1,6 +1,6 @@
 #
-unsetenv HYPOSAT_DATA
-setenv HYPOSAT_DATA ../data
+unset HYPOSAT_DATA
+export HYPOSAT_DATA="../data"
 
 \cp ./hyposat-in.tele hypomod-in
 \cp hyposat-parameter.tele.mod hyposat-parameter

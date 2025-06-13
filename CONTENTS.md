@@ -1,9 +1,8 @@
 # HYPOSAT & HYPOMOD 
 
-Contents and description of the tar-file hyposat.6_2.tar and zip-file hyposat.6_2.zip
-
 ## DIRECTORY hyposat_6.2/. 
-HYPOSAT version 6.2 main directory with following contents
+
+HYPOSAT version 6.2 and HYPOMOD version 2.2 main directory with following contents
 
 
 ### Subdirectory ./bin/
@@ -234,8 +233,6 @@ All source codes to compile your own executives of HYPOSAT and HYPOMOD on Linux 
 #### Scripts for compilation on Linux systems
 
 	make_hyposat 
-		Linux C-shell script to run the Makefile
+		Linux bash-script to run the Makefile
 	Makefile 
 		Makefile for HYPOSAT and HYPOMOD on LinuxA with gfortran and gcc
-
-#### All files with the extension .o are Linux-precompiled object codes of the source code
