@@ -50,10 +50,10 @@ To build HYPOSAT / HYPOMOD, you need:
 
 - A working Fortran compiler (for example gfortran or Intel OneAPI)
 - A working C/C++ compiler
-- CMake. Required for Windows, optional for Linux 
-- A build system generator: For example ninja or make
+- CMake. Required for Windows, optional for Linux. There is also a standard Makefile setup for Linux. Tested for CentOS 7. May require modifications for other Linux systems
+- A build system generator: For example ninja (See https://ninja-build.org) or make
 
-The Program has been tested on Windows 10 and Windows 11 with Visual Studio 2022 and Intel OneAPI, and on Linux with gcc and gfortran compilers.
+The Program has been tested on Windows 10 and Windows 11 with Visual Studio 2022 and Intel OneAPI, and on Linux RHEL 7 and RHEL 9 with gcc and gfortran compilers.
 
 The Windows build expects Microsoft C/C++ compilers and Intel OneAPI Fortran compilers.
  
@@ -77,6 +77,9 @@ To force a specific generator, you can specify it on the command line:
 For example:
 
 cmake -G Ninja CMAKE_BUILD_TYPE:String="Release" -D CMAKE_INSTALL_PREFIX:String="../hyposat-install" ..
+
+When generating an installiation, there are coveniance scripts under the install directory (hyposat.bat, hypomod.bat for windows, hyposat.sh, hypomod.sh for Linux) 
+By calling these scripts from withn a Hyposat/Hypomod working directory, HYPOSAT_DATA will be automatically set, and the application executed.
 
 ### Running build without installing...
 
