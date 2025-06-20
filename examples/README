@@ -1,5 +1,5 @@
 This directory contains examples of input and output 
-files for the location program HYPOSAT version 6.2 .
+files for the programs HYPOSAT version 6.2 and HYPOMOD version 2.2.
 
 Copy one type of input files (named with a common
 extension .single_array, .net, .regional, or .tele) 
@@ -8,11 +8,11 @@ to hyposat-in and hyposat-parameter.
 Run hyposat and compare the hyposat-out file with 
 the corresponding pre-calculated output file.
 
-On Linux you can just run the attached script 
+On Linux you can just run the bash-script 
 'run xxx' with 
 xxx = single_array, net, regional, or tele
 
 E.g., 'run tele'
 
-To run the example for HYPOMOD just run the script 
+To run the example for HYPOMOD just run the bash-script 
 'run_hypomod_example'.
