@@ -455,51 +455,51 @@ C
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       Function get_mtyp(modeln0)
+       character*20 modeln0
+       character*1024 uppcas
+       character*1024 modeln
+       character*3  get_mtyp
+       modeln=uppcas(modeln0)
+       modeln=modeln(1:20)
+       get_mtyp = '_'
 
-      character get_mtyp*3, uppcas*1024
-      character*20 modeln0, modeln
-
-      modeln(1:20) = uppcas(modeln0)(1:20)
-
-      get_mtyp = '_'
-
-      if(index(modeln,'JB').gt.0) then
+       if(index(modeln,'JB').gt.0) then
          get_mtyp = 'E1 '
          goto 9000
-      else if(index(modeln,'PREM').gt.0) then
+       else if(index(modeln,'PREM').gt.0) then
          get_mtyp = 'E2 '
          goto 9000
-      else if(index(modeln,'IASP91A').gt.0) then
+       else if(index(modeln,'IASP91A').gt.0) then
          get_mtyp = 'E4 '
          goto 9000
-      else if(index(modeln,'IASP91').gt.0) then
+       else if(index(modeln,'IASP91').gt.0) then
          get_mtyp = 'E3 '
          goto 9000
-      else if(index(modeln,'SP6').gt.0) then
+       else if(index(modeln,'SP6').gt.0) then
          get_mtyp = 'E5 '
          goto 9000
-      else if(index(modeln,'AK135').gt.0) then
+       else if(index(modeln,'AK135').gt.0) then
          get_mtyp = 'E6 '
          goto 9000
-      else if(index(modeln,'FESCAN').gt.0) then
+       else if(index(modeln,'FESCAN').gt.0) then
          get_mtyp = 'E7 '
          goto 9000
-      else if(index(modeln,'BAREY').gt.0) then
+       else if(index(modeln,'BAREY').gt.0) then
          get_mtyp = 'E8 '
          goto 9000
-      else if(index(modeln,'BAREZ').gt.0) then
+       else if(index(modeln,'BAREZ').gt.0) then
          get_mtyp = 'E9 '
          goto 9000
-      else if(index(modeln,'BARENTS16').gt.0) then
+       else if(index(modeln,'BARENTS16').gt.0) then
          get_mtyp = 'EA '
          goto 9000
-      else if(index(modeln,'BERGEN').gt.0) then
+       else if(index(modeln,'BERGEN').gt.0) then
          get_mtyp = 'EB '
          goto 9000
-      else if(index(modeln,'EK137').gt.0) then
+       else if(index(modeln,'EK137').gt.0) then
          get_mtyp = 'EC '
          goto 9000
-      endif
+       endif
 
 9000  return
       end
