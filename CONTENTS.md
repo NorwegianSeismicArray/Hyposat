@@ -238,4 +238,5 @@ All source codes to compile your own executives of HYPOSAT and HYPOMOD on Linux 
 	Makefile 
 		Makefile for HYPOSAT and HYPOMOD on LinuxA with gfortran and gcc
 
-#### All files with the extension .o are Linux-precompiled object codes of the source code
+	CMakeLists.txt: CMake setup for builds on Windows and Linux
+
