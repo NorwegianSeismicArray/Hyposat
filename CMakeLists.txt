@@ -52,6 +52,9 @@ set (HYPOSAT_VERSION_MINOR 2)
 set (HYPOSAT_VERSION_PATCH 0)
 
 
+#set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
+#message(STATUS "CMAKE_MODULE_PATH= ${CMAKE_MODULE_PATH} ")
+
 ####################################################################################################################
 # Set up Fortran compiler/linker
 ####################################################################################################################
@@ -70,7 +73,7 @@ if (UNIX)
 else (UNIX)
     message(STATUS "")
     message(STATUS "Configuring Intel Fortran compiler and linker for windows ..")
-    set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} /threads /extend_source:132 /assume:underscore /names:lowercase")
+    set (CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} /threads /extend-source:132 /assume:underscore /names:lowercase")
 endif (UNIX)
 
 message(STATUS "")
@@ -80,11 +83,6 @@ message(STATUS "CMAKE_Fortran_LINK_EXECUTABLE: ${CMAKE_Fortran_LINK_EXECUTABLE}"
 message(STATUS "")
 
 
-####################################################################################################################
-# Configure required paths for the /cmake/modules/FindQWT.cmake file to be found, in addition to specifying
-# the root build dir as search hint for the QWT find script
-####################################################################################################################
-set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules)
 set(ROOT_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
 
 
@@ -94,6 +92,7 @@ set(ROOT_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/..)
 ####################################################################################################################
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+
 
 
 message(STATUS "--------------------------------------------------------------------------------------------------")
@@ -107,6 +106,23 @@ install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/data/" DESTINATION data)
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/examples/" DESTINATION examples)
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" DESTINATION . )
 
+if(WIN32)
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/hyposat.bat" DESTINATION . )
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/hypomod.bat" DESTINATION . )
+else()
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/hyposat.sh" DESTINATION . PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
+  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/hypomod.sh" DESTINATION . PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE )
+endif()
+
+
+if (WIN32)
+    message("\n-- Install Intel Fortran libraries...")
+    set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}\\cmake\\modules )
+    message(STATUS "CMAKE_MODULE_PATH= ${CMAKE_MODULE_PATH} ")
+    find_package(IntelFortranRuntimeLibs24)
+    message(STATUS "INTEL_FORTRAN_RUNTIME_LIBS=${INTEL_FORTRAN_RUNTIME_LIBS}")
+    install(FILES ${INTEL_FORTRAN_RUNTIME_LIBS} DESTINATION bin )
+endif()
 
 ####################################################################################################################
 # Configure CPack
