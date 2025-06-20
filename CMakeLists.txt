@@ -52,8 +52,6 @@ set (HYPOSAT_VERSION_MINOR 2)
 set (HYPOSAT_VERSION_PATCH 0)
 
 
-#set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
-#message(STATUS "CMAKE_MODULE_PATH= ${CMAKE_MODULE_PATH} ")
 
 ####################################################################################################################
 # Set up Fortran compiler/linker

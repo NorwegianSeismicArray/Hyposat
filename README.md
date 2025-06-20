@@ -50,12 +50,12 @@ To build HYPOSAT / HYPOMOD, you need:
 
 - A working Fortran compiler (for example gfortran or Intel OneAPI)
 - A working C/C++ compiler
-- CMake >= 3.1
+- CMake. Required for Windows, optional for Linux 
 - A build system generator: For example ninja or make
 
-The Program has been tested on Windows 10 and Windows 11 with Visual Studio 2017 and later Intel OneAPI and on Linux with gcc and gfortran compilers.
+The Program has been tested on Windows 10 and Windows 11 with Visual Studio 2022 and Intel OneAPI, and on Linux with gcc and gfortran compilers.
 
-The Windows build expects Microsoft C/C++ compilers and Intel Fortran compilers.
+The Windows build expects Microsoft C/C++ compilers and Intel OneAPI Fortran compilers.
  
 ## Build instructions:
 
@@ -86,7 +86,7 @@ cmake --build . --target all
 
 cmake --build . --target install
 
-### Creating install package for installing anywhere...
+### Creating a zipped archive for installing anywhere
 
 cmake --build . --target package
 
