@@ -1,8 +1,7 @@
-#!/bin/csh -f
-
+#!/bin/sh
 ##############################################################
 #                                                            #
-# Driver for Makefile for the program hyposat                #
+# Driver for Makefile for the programs HYPOSAT / HYPOMOD     #
 #                                                            #
 # July 2013, Johannes Schweitzer, NORSAR                     #
 #                                                            #
@@ -12,23 +11,29 @@
 #  tested for Linux g77      compiler                        #
 #  tested for Linux gfortran compiler                        #
 #                                                            #
-#  latest changes February 2023:                             #
-#       SunOS removed                                        #
-#                                                            #  
 ##############################################################
 #
+#  The script can have 3 different calls
+#
+#  make_hyposat hyposat
+#  make_hyposat hypomod
+#  make_hyposat clean
+#
+if [ $# != 1 ]
+then
+    exit
+fi
 
-echo
-
-setenv LINUXVERS `uname -s`
-setenv HOSTNAME `hostname`
+LINUXVERS="`uname -s`"
+HOSTNAME="`hostname`"
 
 echo make_hyposat $1 for $HOSTNAME running $LINUXVERS
 
-if ( $LINUXVERS != 'Linux' ) then
+if [ $LINUXVERS != 'Linux' ] 
+then
 	echo "Unknow operation system"
 	exit
-endif
+fi
 
 #
 #  start of FORTRAN compiler specific lines
@@ -37,80 +42,93 @@ endif
 #
 # to be used with g77 compiler
 #
-##	setenv F77 "g77"
+##	export F77="g77"
 ##
-##	setenv FFLAG "-c -malign-double -fno-automatic -fno-backslash "
+##	export FFLAG="-c -malign-double -fno-automatic -fno-backslash "
 ##
-##	setenv LFLAG "-s"
+##	export LFLAG="-s"
 ##
-##	setenv DEBUG "-g3 -Wall -fbounds-check"
-##	setenv DEBUG ""
+##	export DEBUG="-g3 -Wall -fbounds-check"
+##	export DEBUG=""
 ##
 
 
 #
 # to be used with gfortran compiler
 #
-	setenv F77 "/usr/bin/gfortran"
+	export F77="/usr/bin/gfortran"
 
-	setenv FFLAG "-c -fno-automatic -fno-backslash -std=gnu"
+	export FFLAG="-c -fno-automatic -fno-backslash -std=gnu"
 
 #
 ## 	for debugging
 #
 
-#	setenv DEBUG "-g3 -Wall -frange-check"
-	setenv DEBUG " "
+#	export DEBUG="-g3 -Wall -frange-check"
+	export DEBUG=""
 
-#	setenv LFLAG "-lgfortran -lm"
-	setenv LFLAG "-lgfortran -lm -s"
+#	export LFLAG="-lgfortran -lm"
+	export LFLAG="-lgfortran -lm -s"
 
 #
 #  C compiler specific lines
 #
-	setenv CC "/usr/bin/gcc"
+	export CC="/usr/bin/gcc"
 
-	setenv CFLAG "-c"
+	export CFLAG="-c"
 
 #
 #  C++ compiler specific lines
 #
 
-#	setenv CCPP "/usr/bin/g++"
-	setenv CCPP "/usr/bin/gcc"
+#	export CCPP="/usr/bin/g++"
+	export CCPP="/usr/bin/gcc"
 
-	setenv CPPFLAG  "-std=gnu++11"
+	export CPPFLAG="-std=gnu++11"
 
-	setenv LDPP "-lstdc++"
+	export LDPP="-lstdc++"
 
 #
 ## for linkage
 #
 
-	setenv LD "/usr/bin/gfortran"
+	export LD="/usr/bin/gfortran"
 
 #
 ## for optimizing
 #
 
-#	setenv OPT "-O3"
-	setenv OPT "-O3 -ftree-loop-distribution -floop-block -floop-strip-mine -floop-interchange"
+#	export OPT="-O3"
+	export OPT="-O3 -ftree-loop-distribution -floop-block -floop-strip-mine -floop-interchange"
 
 
+if [ $1 == 'clean' ] 
+then
+     make clean
+     exit
+fi
+
+if [ $1 == 'hyposat' ] 
+then
 echo
 echo "make install with :"
 echo "C-compiler       CC $CC"
 echo "Fortran-compiler F77 $F77"
 echo
-
-if ( $1 == 'clean' ) then
-     make clean
+     make hyposat
      exit
-endif
+fi
 
-make hyposat
-
-make hypomod
+if [ $1 == 'hypomod' ] 
+then
+echo
+echo "make install with :"
+echo "C-compiler       CC $CC"
+echo "Fortran-compiler F77 $F77"
+echo
+     make hypomod
+     exit
+fi
 
 exit
 #

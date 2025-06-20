@@ -8,7 +8,7 @@
 #                                                            #
 #  johannes@norsar.no                                        #
 #                                                            #
-# to be started with C-shell script make_hyposat             #
+# to be started with bash-script make_hyposat                #
 #                                                            #
 ##############################################################
 
@@ -29,11 +29,13 @@ objm2 = hyposat_lib.o hyposat_file.o hyposat_geo.o hyposat_geotab.o hyposat_phas
 objm3 = hyposat_crust.o hyposat_crust_mod.o hyposat_mag.o hyposat_loc.o hyposat_depth.o hyposat_time.o 
 objm4 = hyposat_numr.o hyposat_clib.o isf_in.o libtau_h.o 
 
+hyposat : 
 hyposat : $(obj1) $(obj2) $(obj3) $(obj4) 
 	$(LD) $(LDPP) $(LFLAG) -o $(prog) $(obj1) $(obj2) $(obj3) $(obj4) 
 
 	mv $(prog) $(DEST)
 
+hypomod : 
 hypomod : $(objm) $(objm2) $(objm3) $(objm4)
 	$(LD) $(LFLAG) -o $(prog2) $(objm) $(objm2) $(objm3) $(objm4)
 
