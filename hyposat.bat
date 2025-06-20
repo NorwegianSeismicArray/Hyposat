@@ -1,0 +1,7 @@
+set HYPOSATHOME=%~dp0
+set HYPOSAT_DATA=%HYPOSATHOME%\\data
+
+echo "HYPOSAT_DATA=%HYPOSAT_DATA%
+
+%HYPOSATHOME%\\bin\\hyposat.exe
+

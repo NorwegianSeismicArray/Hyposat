@@ -2174,7 +2174,7 @@ c
       real*8 lat,lon,elev
       real*4 sla,slo
       integer ierr,idla,imla,idlo,imlo,jdate,j1,j2
-      character*40 uppcas, chgcas
+      character*1024 uppcas, chgcas
 C
       ierr = 2
       ialt = 0

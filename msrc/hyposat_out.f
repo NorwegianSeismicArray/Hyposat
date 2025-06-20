@@ -4,7 +4,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       character line*(*),com*(*)
       character onflags*3
 
-      character uppcas*40,chgcas*40
+      character uppcas*1024,chgcas*1024
 
       character sta*5,arrid*8,phas1*8,phas2*8,magtype*2
       character timedef*1,azimdef*1,slowdef*1,sp_fm*1,detchar*1,
