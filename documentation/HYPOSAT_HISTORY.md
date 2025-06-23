@@ -485,11 +485,12 @@ e-mail: johannes.schweitzer@norsar.no
 	CPQ (see ISC publication) included as measure of location quality.
 	hyposat_loc changed to handle better models without Conrad or Moho discontinuities.
 
-### Version 6.1f February - April 2025
+### Version 6.1f February - May 2025
 
 	Agreement between HYPOSAT-PARAMETER settings and new Manual carefully checked.
+	do-loops closing statement sytematically changed 'continue' or 'enddo'
 	Several smaller bugs corrected.
 
-### Version 6.2 May 2025 First GitHub version
+### Version 6.2 June 2025 First GitHub version
 
 	Distribution with newly structured and extended Manual.

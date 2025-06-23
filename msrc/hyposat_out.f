@@ -177,7 +177,8 @@ c
 
       used = line(88:92)
       do 10 i=1,len(used)
-10    if(used(i:i).eq.' ') used(i:i)='_'
+      if(used(i:i).eq.' ') used(i:i)='_'
+10    continue
       call json_add_string("used", used, json_rc)
 
       if(onflags(1:1).ne.'_' .and. onflags(1:1).ne.' ')

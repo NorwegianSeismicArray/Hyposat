@@ -304,9 +304,12 @@ c
 c     reset onset table
 c
       do 110 i=1,np
-      do 110 j=1,3
-      do 110 k=1,3
-110   ion(i,j,k) = 0
+      do 109 j=1,3
+      do 108 k=1,3
+      ion(i,j,k) = 0
+108   continue
+109   continue
+110   continue
 
       if (indph1.le.0) goto 9000
 
@@ -1145,7 +1148,8 @@ c       endif
 8800  continue
 
       do 8850 i = 1,nphas1
-8850  rtt(i) = sngl(tti(i))
+      rtt(i) = sngl(tti(i))
+8850  continue
 
       call indexx(nphas1,rtt,indx)
 

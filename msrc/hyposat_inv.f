@@ -101,7 +101,7 @@ C
 C 'a priori' data uncertainties, 
 C  and 'a priori' model uncertainties. 
 C
-      DO 10 J=1,M
+      DO 11 J=1,M
 
       DO 10 I=1,N
 
@@ -112,6 +112,7 @@ c      print *,i,j,b(i,j),rs(J),dats(I),dat(i)
 c     endif
 
 10    continue
+11    continue
 
 C
 C single value decomposition (SVD)
@@ -161,18 +162,20 @@ C
 C calucating the generalised inverse of A , stored in array AT
 c (and zero setting of field RES and calculating weighted data D2)
 C
-      DO 110 I=1,N
+      DO 112 I=1,N
 
         res(i) = 0.d0
         d2(i) = DAT(i)/dats(i)
 
-        DO 110 J=1,M
+        DO 111 J=1,M
 
           AT(J,I)=0.d0
 
           DO 110 K=1,KQ
             AT(J,I)=AT(J,I)+V(J,K)*EWMOD(K)*b(I,K)
-110   CONTINUE
+110       CONTINUE
+111     CONTINUE
+112   CONTINUE
 
 C
 C weighting with 'a priory' data uncertainties
@@ -180,18 +183,19 @@ C and       with 'a priory' model uncertainties
 C and calculating the solution vector
 C
 C
-      DO 130 J=1,M
+      DO 131 J=1,M
 
         r(j)   = 0.d0
 
         DO 130 I=1,N
           r(J)=r(J)+AT(J,I)*d2(i)*rs(J)
-130   continue
+130     continue
+131   continue
 
 C
 C calculating the resolution matrix
 C
-      DO 145 J2=1,M
+      DO 146 J2=1,M
         DO 145 J1=1,M
 
         rm(J1,J2)=0.d0
@@ -202,7 +206,8 @@ C
 
         rm(J1,J2)=rs(J1)*rm(J1,J2)/rs(J2)
 
-145   CONTINUE
+145     CONTINUE
+146   CONTINUE
 
       if (typctl.eq.11 .or. typctl.gt.13) then
 
@@ -221,10 +226,11 @@ C
 
       if(n.ge.m) then
 
-        DO 160 J=1,M
+        DO 161 J=1,M
           DO 160 I=1,N
             res(I)=res(I)+A(I,J)*r(J)
-160     CONTINUE
+160       CONTINUE
+161     CONTINUE
 
         RV0=0.d0
 
@@ -254,7 +260,7 @@ C
 C covariance matrix (temporarly stored in AT)
 C
       DO 175 J2=1,M
-        DO 175 J1=1,j2
+        DO 174 J1=1,j2
 
         sum = 0.d0
 
@@ -265,6 +271,7 @@ C
         AT(J1,J2)= sum*rv
         if(j1.ne.j2) AT(J2,J1)= AT(J1,J2)
 
+174     CONTINUE
 175   CONTINUE
 
       if (typctl.eq.12 .or. typctl.gt.13) then
@@ -329,14 +336,15 @@ C calculating the information density matrix (stored in AT )
 C
 199   continue
 
-      DO 210 I2=1,N
+      DO 211 I2=1,N
         DO 210 I1=1,N
           AT(I1,I2)=0.d0
           DO 200 K=1,m
             AT(I1,I2)=AT(I1,I2)+b(I1,K)*b(I2,K)
 200       CONTINUE
           AT(I1,I2)=dats(I1)*AT(I1,I2)/dats(I2)
-210   CONTINUE
+210     CONTINUE
+211   CONTINUE
 
       dinfm = 0.d0
       do 214 j1=1,n
@@ -407,20 +415,28 @@ C
       DO  50  I=1,M 
         vvl(i) = 0.d0
         DO  50  J=1,N 
-50      GT(I,J)=GGL(J,I)
-      DO  100  I=1,M
+        GT(I,J)=GGL(J,I)
+50      continue
+
+      DO  101  I=1,M
       DO  100  J=1,M
       al(i,j) = 0.d0
       CC=0.d0
       DO  80  K=1,N 
       rrl (j) = 0.d0
-80      CC=CC+GT(I,K)*GGL(K,J)  
-100     Q(I,J)=CC 
+      CC=CC+GT(I,K)*GGL(K,J)  
+80    continue
+      Q(I,J)=CC 
+100   continue
+101   continue
+
       DO  200  I=1,M
       CC=0.d0
       DO  150  K=1,N
-150     CC=CC+GT(I,K)*DDL(K)
-200     GTD(I)=CC 
+        CC=CC+GT(I,K)*DDL(K)
+150     continue
+      GTD(I)=CC 
+200   continue
 C 
 C       MATRIX AL 
 C 
@@ -428,14 +444,16 @@ C
       S=0.d0
       IF(I.EQ.1)  GO TO 700 
       DO  500  K=1,I-1  
-500     S=S+q2(AL(I,K))
+        S=S+q2(AL(I,K))
+500     continue
 700     AL(I,I)=DSQRT(dabs(Q(I,I)-S))
       IF(I.EQ.M)  GO TO 2000
-      DO  1000  J=I+1,M 
+      DO  1001  J=I+1,M 
       S=0.d0
       IF(I.EQ.1)  GO TO 1000
       DO  800  K=1,I-1  
-800     S=S+AL(I,K)*AL(J,K)   
+      S=S+AL(I,K)*AL(J,K)   
+800   continue
 
       if(al(i,i).le.0.d0) then
          lsqerr = 1
@@ -443,6 +461,7 @@ C
          go to 8000
       endif
 1000  AL(J,I)=(Q(I,J)-S)/AL(I,I)
+1001  CONTINUE  
 2000  CONTINUE  
 C 
 C       MATRIX ALI
@@ -458,47 +477,61 @@ C
       DO  3000  J=1,I-1 
       S=0.d0
       DO  2400  K=J,I-1 
-2400    S=S+AL(I,K)*ALI(K,J)  
-3000    ALI(I,J)=-S/AL(I,I)   
+        S=S+AL(I,K)*ALI(K,J)  
+2400    continue
+        ALI(I,J)=-S/AL(I,I)   
+3000    continue
 3200    DO  3500  J=I+1,M 
-3500    ALI(I,J)=0.d0 
+        ALI(I,J)=0.d0 
+3500    continue
 4000  CONTINUE  
 C 
 C       MATRIX QI 
 C 
-      DO  4500  I=1,M   
+      DO  4501  I=1,M   
       DO  4500  J=1,M   
-4500    ALIT(I,J)=ALI(J,I)
-      DO  4800  I=1,M   
+        ALIT(I,J)=ALI(J,I)
+4500  CONTINUE  
+4501  CONTINUE  
+      DO  4801  I=1,M   
       DO  4800  J=1,M   
       CC=0.d0
       DO  4600  K=1,M   
-4600    CC=CC+ALIT(I,K)*ALI(K,J)  
-4800    QI(I,J)=CC
+        CC=CC+ALIT(I,K)*ALI(K,J)  
+4600    continue
+        QI(I,J)=CC
+4800  CONTINUE  
+4801  CONTINUE  
 C 
 C       MODEL A  
 C 
       DO  5000  I=1,M   
       CC=0.d0
       DO  4900  K=1,M   
-4900    CC=CC+QI(I,K)*GTD(K)  
-5000    AAL(I)=CC   
+        CC=CC+QI(I,K)*GTD(K)  
+4900    continue
+        AAL(I)=CC   
+5000    continue
 C 
 C       RESIDUALS AND MODEL STANDARD DEVIATIONS  
 C 
       DO  5500  I=1,N   
       CC=0.d0
       DO  5300  K=1,M   
-5300    CC=CC+GGL(I,K)*AAL(K) 
-5500    DTH(I)=CC 
+        CC=CC+GGL(I,K)*AAL(K) 
+5300    continue
+        DTH(I)=CC 
+5500    continue
       S=0.d0
       DO  6000  I=1,N   
       RRL(I)=DDL(I)-DTH(I)
-6000    S=S+q2(RRL(I))
+        S=S+q2(RRL(I))
+6000    continue
       if(n.gt.m) then
       E=S/(N-M) 
         DO  7000  I=1,M   
-7000      VVL(I)=DSQRT(QI(I,I)*E)
+          VVL(I)=DSQRT(QI(I,I)*E)
+7000      continue
       endif
 8000    RETURN
       END   

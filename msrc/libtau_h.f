@@ -199,7 +199,8 @@ c++
 c+++
 
       do 11 nph=1,2
- 11   pu(ku(nph)+1,nph)=pm(1,nph)
+      pu(ku(nph)+1,nph)=pm(1,nph)
+ 11   continue
 
 c
 c     write(10,*)'nasgr nl len2',nasgr,nl,len2
@@ -231,7 +232,8 @@ c     dn=3.1415927/(180.*pn*xn)
       do 3 i=1,nbrn
       jidx(i)=jndx(i,2)
       do 4 j=1,2
- 4    dbrn(i,j)=-1.d0
+      dbrn(i,j)=-1.d0
+ 4    continue
  8    if(jndx(i,2).le.indx(k,2)) go to 7
       k=k+1
       go to 8
@@ -240,7 +242,8 @@ c     dn=3.1415927/(180.*pn*xn)
       l=0
       do 10 j=jndx(i,1),jndx(i,2)
       l=l+1
- 10   tp(l,ind)=pt(j)
+      tp(l,ind)=pt(j)
+ 10   continue
  9    if(nafl(k,1).gt.0.and.(phcd(i)(1:1).eq.'P'.or.
      1 phcd(i)(1:1).eq.'S')) go to 3
       do 5 j=1,9
@@ -303,20 +306,25 @@ c     if(.not.segmsk(i)) go to 4
       if(iabs(nafl(i,1)).le.1) dop=.true.
       if(iabs(nafl(i,1)).ge.2) dos=.true.
  4    continue
-      do 5 i=1,nseg
+      do 555 i=1,nseg
       if(nafl(i,2).gt.0.or.odep.lt.0.) go to 5
       ind=nafl(i,1)
       k=0
       do 15 j=indx(i,1),indx(i,2)
       k=k+1
- 15   pt(j)=tp(k,ind)
+      pt(j)=tp(k,ind)
+ 15   continue
  5    iidx(i)=-1
+555   continue
+
       do 6 i=1,nbrn
- 6    jndx(i,2)=-1
+      jndx(i,2)=-1
+ 6    continue
       if(ki.le.0) go to 7
       do 8 i=1,ki
       j=kk(i)
- 8    pt(j)=pk(i)
+      pt(j)=pk(i)
+ 8    continue
       ki=0
 c   Sample the model at the source depth.
  7    odep=amax1(dep,.011)
@@ -480,12 +488,14 @@ c   depth.
  10   call bkin(nin,ndex(ks,nph),ku(nph)+km(nph),tup)
 c   Move the depth correction values to a less temporary area.
  11   do 31 i=1,ku(nph)
- 31   tauu(i,nph)=tup(i)
+      tauu(i,nph)=tup(i)
+ 31   continue
       k=ku(nph)
       do 12 i=1,km(nph)
       k=k+1
       xc(i)=tup(k)
- 12   xu(i,nph)=tup(k)
+      xu(i,nph)=tup(k)
+ 12   continue
 c     write(10,*)'bkin',ks,sngl(sgn),sngl(tauu(1,nph)),sngl(xu(1,nph))
 c
 c   Fiddle pointers.
@@ -583,7 +593,8 @@ c   Integrate from the surface to the source.
       call tauint(umin,pm(j,nph),pm(i,nph),zm(j,nph),zm(i,nph),ttau,tx)
       tauus1(nph)=tauus1(nph)+ttau
       xus1(nph)=xus1(nph)+tx
- 19   j=i
+      j=i
+ 19   continue
 c     write(10,*)'is ks tauus1 xus1',is,ks,sngl(tauus1(nph)),
 c    1 sngl(xus1(nph))
  42   if(dabs(zm(is,nph)-zs).le.dtol) go to 33
@@ -607,7 +618,8 @@ c   down to the turning point of the shallowest down-going ray.
       if(u1.lt.umin) go to 36
       call tauint(umin,u0,u1,z0,z1,ttau,tx)
       tauus2(nph)=tauus2(nph)+ttau
- 35   xus2(nph)=xus2(nph)+tx
+      xus2(nph)=xus2(nph)+tx
+ 35   continue
 c36   write(10,*)'is ks tauus2 xus2',is,ks,sngl(tauus2(nph)),
 c    1 sngl(xus2(nph))
  36   z1=zmod(umin,i-1,nph)
@@ -664,7 +676,8 @@ c     write(10,*)'Depcor:  do pS or sP integral - iph =',iph
       call tauint(umin,pm(j,iph),pm(i,iph),zm(j,iph),zm(i,iph),ttau,tx)
       tauus1(iph)=tauus1(iph)+ttau
       xus1(iph)=xus1(iph)+tx
- 46   j=i
+      j=i
+ 46   continue
  47   z1=zmod(umin,j,iph)
       if(dabs(zm(j,iph)-z1).le.dtol) go to 53
 c   Unless the turning point is right on a sample slowness, one more
@@ -703,7 +716,8 @@ c    1 sngl(du),sngl(us(nph))
       call tauint(ua(k,nph),pm(j,nph),pm(i,nph),zm(j,nph),zm(i,nph),
      1 ttau,tx)
       taua(k,nph)=taua(k,nph)+ttau
- 55   j=i
+      j=i
+ 55   continue
 c     write(10,*)'l k ua taua',l,k,sngl(ua(k,nph)),sngl(taua(k,nph))
  54   if(dabs(zm(is,nph)-zs).le.dtol) go to 56
 c   Unless the source is right on a sample slowness, one more partial
@@ -736,12 +750,13 @@ c   Handle up-going P and S.
       i2=indx(i,2)
 c     write(10,*)'i1 i2 sgn iph',i1,i2,sngl(sgn),iph
       m=1
-      do 21 k=i1,i2
+      do 211 k=i1,i2
       if(pt(k).gt.umin) go to 22
 23    if(dabs(pt(k)-pu(m,nph)).le.dtol) go to 21
       m=m+1
       go to 23
  21   tau(1,k)=taut(k)+sgn*tauc(m)
+211   continue
       k=i2
 c     write(10,*)'k m',k,m
       go to 24
@@ -1163,7 +1178,8 @@ c    1 (tau(k,j),k=1,4),(cn*xlim(k,j),k=1,2)
  4    continue
 c100  format(1x,a,i5,f10.6,1p4e10.2,0p2f7.2)
       dmx=dmax1(dmx,xlim(2,j))
- 2    j=i
+      j=i
+ 2    continue
 c     if(prnt(1)) write(10,100,iostat=ios)'   ',j,pt(j)
       xbrn(jb,1)=dmn
       xbrn(jb,2)=dmx
@@ -1227,7 +1243,8 @@ c     write(10,*)'Pdecu:  fill in new grid'
       do 18 i=1,ka
       pt(k)=ua(i,int)
       tau(1,k)=taua(i,int)
- 18   k=k+1
+      k=k+1
+ 18   continue
       pt(k)=pt(i2)
       tau(1,k)=tau(1,i2)
       go to 19
@@ -1277,7 +1294,8 @@ c
  5    if(sgn*(x-xm).le.dx2) go to 2
       if(k.lt.m) go to 3
       do 4 j=m,k
- 4    pt(j)=-1.d0
+      pt(j)=-1.d0
+ 4    continue
  3    m=k+2
       k=i-1
       axm=1d10
@@ -1289,7 +1307,8 @@ cj.s.  7    xm=xm+dx*idint((x-xm-dx2)/dx+rnd)
  1    continue
       if(k.lt.m) go to 9
       do 6 j=m,k
- 6    pt(j)=-1.d0
+      pt(j)=-1.d0
+ 6    continue
  9    k=i1
       do 10 i=is,i2
       if(pt(i).lt.0.d0) go to 10
@@ -1354,14 +1373,15 @@ c   -1,0,1,...,n.
       d3h(m)=del(k)*sdel(k)-del(m)*sdel(m)
       d1h(m)=sdel(k)-sdel(m)
       dih(m)=deli(k)-deli(m)
- 1    m=k
+      m=k
+ 1    continue
       l=i1-1
       if(n2.le.0) go to 10
 c   Loop over G;i, i=0,1,...,n-3.
       do 2 i=1,n2
       m=1
 c   Update temporary variables for G;i-1.
-      do 3 k=2,5
+      do 311 k=2,5
       del(m)=del(k)
       sdel(m)=sdel(k)
       deli(m)=deli(k)
@@ -1370,6 +1390,7 @@ c   Update temporary variables for G;i-1.
       d1h(m)=d1h(k)
       dih(m)=dih(k)
  3    m=k
+ 311  continue
       l=l+1
       del(5)=pt(i2)-pt(l+1)
       sdel(5)=dsqrt(dabs(del(5)))
@@ -1414,7 +1435,7 @@ c   at p;n.
  10   do 4 j=1,4
       m=1
 c   Update temporary variables for G;i-1.
-      do 5 k=2,5
+      do 577 k=2,5
       del(m)=del(k)
       sdel(m)=sdel(k)
       deli(m)=deli(k)
@@ -1423,6 +1444,7 @@ c   Update temporary variables for G;i-1.
       d1h(m)=d1h(k)
       dih(m)=dih(k)
  5    m=k
+577   continue
       l=l+1
       del(5)=0.d0
       sdel(5)=0.d0
@@ -1531,13 +1553,16 @@ cjs 26.02.2010      if(i2-i1)13,1,2
          tau(2,i1)=x1
       endif
 
-      do 3 i=i1,i2
+      do 311 i=i1,i2
       n=n+1
       b(n)=tau(1,i)
       do 3 j=1,2
- 3    a(j,n)=coef(j,i)
+      a(j,n)=coef(j,i)
+ 3    continue
+ 311  continue
       do 4 j=1,3
- 4    ap(j)=coef(j+2,i2)
+      ap(j)=coef(j+2,i2)
+ 4    continue
       n1=n-1
 c
 c   Arrays ap(*,1), a, and ap(*,2) comprise n+2 x n+2 penta-diagonal
@@ -1557,7 +1582,8 @@ c   a(4,*).
       alr=a(1,i)/a(1,j)
       a(1,i)=1.d0-a(2,j)*alr
       b(i)=b(i)-b(j)*alr
- 5    j=i
+      j=i
+ 5    continue
       alr=ap(1)/a(1,n1)
       ap(2)=ap(2)-a(2,n1)*alr
       gn=xn-b(n1)*alr
@@ -1569,7 +1595,8 @@ c   When finished, storage g(2), a(4,*), g(5) will comprise vector g.
       j=n
       do 6 i=n1,1,-1
       b(i)=(b(i)-b(j)*a(2,i))/a(1,i)
- 6    j=i
+      j=i
+ 6    continue
 cj.s.      g1=(x1-coef(4,i1)*b(1)-coef(5,i1)*b(2))/coef(3,i1)
 c
       tau(2,i1)=x1
@@ -1578,7 +1605,8 @@ c
       j=1
       do 7 i=is,ie
       j=j+1
- 7    tau(2,i)=coef(3,i)*b(j-1)+coef(4,i)*b(j)+coef(5,i)*b(j+1)
+      tau(2,i)=coef(3,i)*b(j-1)+coef(4,i)*b(j)+coef(5,i)*b(j+1)
+ 7    continue
       tau(2,i2)=xn
       return
       end
@@ -1618,7 +1646,8 @@ c
       x(1)=pi-dtol
       x(2)=-10.d0
  7    do 1 j=mbr1,mbr2
- 1    if(jndx(j,2).gt.0) call findtt(j,x,n,tmp1,tmp2,tmp3,tmp4,ctmp)
+      if(jndx(j,2).gt.0) call findtt(j,x,n,tmp1,tmp2,tmp3,tmp4,ctmp)
+ 1    continue
 c
 c js 26.02.2010
 c
@@ -1645,7 +1674,7 @@ c
 c
 c JS 8 June 2021     dddp(k)=tmp4(j)
 c
-c     tmp(j,4) is dddp ( d(Distance) / d(Ray Parameter) isscaled in
+c     tmp(j,4) is dddp ( d(Distance) / d(Ray Parameter) is scaled in
 c     radian and not degrees for both Distance and Ray Paramter.
 c     The Factor cn2 converts this to degrees as needed for hyposat
 c
@@ -1707,7 +1736,8 @@ cjs   dtdh(n)=hsgn*sqrt(abs(sngl(us(nph)*us(nph)-ps*ps)))
       if(ps.le.xbrn(jb,3)) phnm(n)(in:)='bc'
       go to 8
  2    do 4 jj=1,2
-      go to (5,6),jj
+c js      go to (5,6),jj
+      if(jj.eq.2) go to 6
  5    arg=9.d0*tau(4,j)*tau(4,j)+32.d0*tau(3,j)*(x-tau(2,j))
       if(arg.ge.0.d0) go to 3
       write(msg,100)arg
@@ -1836,7 +1866,8 @@ c   lower limits of subsequences to be sorted independently.  A
 c   depth of k allows for n<=2**(k+1)-1.
       if(n.le.0) return
       do 1 i=1,n
- 1    iptr(i)=i
+      iptr(i)=i
+ 1    continue
       if(n.le.1) return
       r=.375
       m=1

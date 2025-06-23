@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2      ' )
-c     parameter (vdate=' ( 29 May 2025)' )
+c     parameter (vdate=' ( 20 June 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 29 May 2025
+c     last changes: 20 June 2025
 c
 c----------------------------------------------------------------------
 c
@@ -2272,7 +2272,7 @@ c           itest = write_isf_error(typctl)
       ii = 0
       string = ' '
 
-      do 12 i=1,mread+200
+      do 13 i=1,mread+200
 
       read (10,'(a)',end=14) string
 
@@ -3016,10 +3016,10 @@ c
      +           touse(ii)
       endif
 
-c     end of onset reading loop
 12    o_string = string
-c     end of onset reading loop
 
+c     end of onset reading loop
+13    continue
 
 14    close(10)
 
@@ -4468,7 +4468,7 @@ c              no event deeper than 799. km !
                if(abs(rzo2-rzo1).le.0.001) go to 280
 
                if(nphas1.gt.0 .and. nphas2.gt.0) then
-                  do 250 ki=1,nphas1
+                  do 251 ki=1,nphas1
                   do 250 kj=1,nphas2
                   if(phcd1(ki).eq.phcd(k)  .and. 
      +               phcd(k).eq.phcd2(kj)) then
@@ -4476,6 +4476,7 @@ c              no event deeper than 799. km !
                      go to 280
                   endif
 250               continue
+251               continue
                endif
 
                if(rzo.gt.rzo1 .and. nphas1.gt.0) then
@@ -6176,7 +6177,8 @@ c     print *,' '
           print *,r(4),var(4)
           do 305 j=1,jj
           f1 = dat(j)-res(j)
-305       print *,j,dat(j),res(j),f1
+          print *,j,dat(j),res(j),f1
+305       continue
       endif
 
 c
