@@ -92,7 +92,8 @@ c
       if(n1.ne.n2) then
          b = 0.d0
          do 10 i = n1,n2,-1
-10       b = b + a(i)
+         b = b + a(i)
+10       continue
          dmean = b /dble(n1-n2+1)
       else
 c dmean = 0.d0

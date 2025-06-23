@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20
       parameter (version='HYPOMOD Version 2.2     ')
-c     parameter (vdate=' ( 27 May 2025)' )
+c     parameter (vdate=' ( 20 June 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes:  27 May 2025
+c     last changes:  20 June 2025
 c
 c----------------------------------------------------------------------
 c
@@ -1209,7 +1209,7 @@ c
       ii = 0
       string = ' '
 
-      do 12 i=1,mread+200
+      do 13 i=1,mread+200
 
       read (10,'(a)',end=14) string
 
@@ -1845,6 +1845,8 @@ c       print *,vlflag,vp,vs
       endif
 
 12    o_string = string
+
+13    continue
 
 14    close(10)
 

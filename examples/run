@@ -10,4 +10,9 @@ export HYPOSAT_DATA="../data"
 
 \diff hyposat-out hyposat-out.$1 | more
 
+if [ $1 == "net" ] 
+then
+   \diff hyposat-out.isf hyposat-out.isf.net | more
+fi
+
 exit

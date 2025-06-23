@@ -232,8 +232,8 @@ All source codes to compile your own executives of HYPOSAT and HYPOMOD on Linux 
 
 #### Scripts for compilation on Linux systems
 
-	make_hyposat 
-		Linux bash-script to run the Makefile
+	run_make 
+		Linux bash-script to run the Makefile for HYPOSAT or HYPOMOD
 	Makefile 
 		Makefile for HYPOSAT and HYPOMOD on LinuxA with gfortran and gcc
 

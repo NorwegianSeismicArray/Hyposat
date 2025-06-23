@@ -1025,8 +1025,9 @@ c Now interpolate to (X0,Y(j)), j=jmin,jmax).
 c
       do 100 j = jmin,jmax
       js = j - jmin + 1
-100   call holint (muse,x(imin),f(imin,j),fbad,x0,
+      call holint (muse,x(imin),f(imin,j),fbad,x0,
      .             f0s(js),fx0s(js),iext,ibad)
+100   continue
 c
 c Now interpolate to (X0,Y0).
 c

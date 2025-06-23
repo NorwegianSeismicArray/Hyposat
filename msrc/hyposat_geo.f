@@ -529,7 +529,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
          V2(I)=1.000001d0*V(I)
          V(I2)=V2(I)
       ENDIF
-600   G(I)=(V2(I)-V(I))/H(I)
+      G(I)=(V2(I)-V(I))/H(I)
+600   continue
  
       RVV = p / ((re-zo)*PIM)
       if(rvv*vmax.gt.1.d0) rvv=1.d0/vmax
