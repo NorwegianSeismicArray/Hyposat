@@ -1737,8 +1737,9 @@ cjs   dtdh(n)=hsgn*sqrt(abs(sngl(us(nph)*us(nph)-ps*ps)))
       go to 8
  2    do 4 jj=1,2
 c js      go to (5,6),jj
+c  5    arg=9.d0*tau(4,j)*tau(4,j)+32.d0*tau(3,j)*(x-tau(2,j))
       if(jj.eq.2) go to 6
- 5    arg=9.d0*tau(4,j)*tau(4,j)+32.d0*tau(3,j)*(x-tau(2,j))
+      arg=9.d0*tau(4,j)*tau(4,j)+32.d0*tau(3,j)*(x-tau(2,j))
       if(arg.ge.0.d0) go to 3
       write(msg,100)arg
  100  format('Bad sqrt argument:',1pd11.2,'.')

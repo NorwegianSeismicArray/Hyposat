@@ -295,12 +295,13 @@ C
 C correlation matrix  ( stored in A )
 C
       if (typctl.ge.13) then
-        DO 190 J2=1,M
+        DO 191 J2=1,M
           DO 190 J1=1,M
           a(j1,j2) = 0.d0
           if(var(J1).gt.1.d-8 .and. var(J2).gt.1.d-8) 
      +        A(J1,J2)=AT(J1,J2)/(var(J1)*var(J2))
 190     continue
+191     continue
 
         write(unit,'(/'' The Correlation Matrix:''/)')
         do 195 j1=1,m
@@ -412,11 +413,12 @@ C
 
       lsqerr = 0
 
-      DO  50  I=1,M 
+      DO  51  I=1,M 
         vvl(i) = 0.d0
         DO  50  J=1,N 
         GT(I,J)=GGL(J,I)
 50      continue
+51      continue
 
       DO  101  I=1,M
       DO  100  J=1,M

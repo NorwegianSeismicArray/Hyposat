@@ -1,0 +1,138 @@
+#!/bin/sh
+##############################################################
+#                                                            #
+# Driver for Makefile for the programs HYPOSAT / HYPOMOD     #
+#                                                            #
+# July 2013, Johannes Schweitzer, NORSAR                     #
+#                                                            #
+#  johannes@norsar.no                                        #
+#                                                            #
+#  tested for SunOS f77      compiler                        #
+#  tested for Linux g77      compiler                        #
+#  tested for Linux gfortran compiler                        #
+#                                                            #
+##############################################################
+#
+#  The script can have 3 different calls
+#
+#  run_make hyposat
+#  run_make hypomod
+#  run_make clean
+#
+if [ $# != 1 ]
+then
+    echo "Please use:"
+    echo "run_make hyposat"
+    echo "run_make hypomod"
+    echo "run_make clean"
+    exit
+fi
+
+LINUXVERS="`uname -s`"
+HOSTNAME="`hostname`"
+
+echo make_hyposat $1 for $HOSTNAME running $LINUXVERS
+
+if [ $LINUXVERS != 'Linux' ] 
+then
+	echo "Unknow operation system"
+	exit
+fi
+
+#
+#  start of FORTRAN compiler specific lines
+#
+
+#
+# to be used with g77 compiler
+#
+##	export F77="g77"
+##
+##	export FFLAG="-c -malign-double -fno-automatic -fno-backslash "
+##
+##	export LFLAG="-s"
+##
+##	export DEBUG="-g3 -Wall -fbounds-check"
+##	export DEBUG=""
+##
+
+
+#
+# to be used with gfortran compiler
+#
+	export F77="/usr/bin/gfortran"
+
+	export FFLAG="-c -fno-automatic -fno-backslash -std=gnu"
+
+#
+## 	for debugging
+#
+
+#	export DEBUG="-g3 -Wall -frange-check"
+	export DEBUG=""
+
+#	export LFLAG="-lgfortran -lm"
+	export LFLAG="-lgfortran -lm -s"
+
+#
+#  C compiler specific lines
+#
+	export CC="/usr/bin/gcc"
+
+	export CFLAG="-c"
+
+#
+#  C++ compiler specific lines
+#
+
+#	export CCPP="/usr/bin/g++"
+	export CCPP="/usr/bin/gcc"
+
+	export CPPFLAG="-std=gnu++11"
+
+	export LDPP="-lstdc++"
+
+#
+## for linkage
+#
+
+	export LD="/usr/bin/gfortran"
+
+#
+## for optimizing
+#
+
+#	export OPT="-O3 -ftree-loop-distribution -floop-block -floop-strip-mine -floop-interchange"
+ 	export OPT="-O3"
+
+
+if [ $1 == 'clean' ] 
+then
+     make clean
+     exit
+fi
+
+if [ $1 == 'hyposat' ] 
+then
+echo
+echo "make install with :"
+echo "C-compiler       CC $CC"
+echo "Fortran-compiler F77 $F77"
+echo
+     make hyposat
+     exit
+fi
+
+if [ $1 == 'hypomod' ] 
+then
+echo
+echo "make install with :"
+echo "C-compiler       CC $CC"
+echo "Fortran-compiler F77 $F77"
+echo
+     make hypomod
+     exit
+fi
+
+exit
+#
