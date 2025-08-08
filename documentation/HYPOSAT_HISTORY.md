@@ -494,3 +494,8 @@ e-mail: johannes.schweitzer@norsar.no
 ### Version 6.2 June 2025 First GitHub version
 
 	Distribution with newly structured and extended Manual.
+
+### Version 6.2a August 2025 
+
+	For consisttancy reasons Earth figure changed from Stacey (1992) to WGS84.
+        Magnitude and net-magnitude calculations moved in own subroutines.

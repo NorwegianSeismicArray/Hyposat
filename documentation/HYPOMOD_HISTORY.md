@@ -60,3 +60,6 @@
 
 	Compatible with HYPOSAT_6.2.
 
+### Version 2.2a August 2025
+
+	Compatible with HYPOSAT_6.2a.
