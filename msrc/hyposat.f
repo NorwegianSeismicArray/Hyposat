@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2a     ' )
-c     parameter (vdate=' ( 07 August 2025)' )
+c     parameter (vdate=' ( 11 August 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 07 August 2025
+c     last changes: 11 August 2025
 c
 c----------------------------------------------------------------------
 c
@@ -502,7 +502,7 @@ c
       stome0  = 120.d0
       wadmin  = 0.d0
       wadmax  = 300.d0
-      dismaxst = 21001.d0
+      dismaxst = 180.d0
       disminst = -1.d0
 
       iwl = 0
@@ -1885,8 +1885,8 @@ c
       endif
 
       if(kmout) then
-        dismaxst = dismaxst * 111.2d0
-        disminst = disminst * 111.2d0
+        dismaxst = dismaxst * 111.5d0
+        disminst = disminst * 110.5d0
       endif
 
       if(isf_out) then
