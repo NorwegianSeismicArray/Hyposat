@@ -1233,3 +1233,267 @@ C     Return correction term:
  
       RETURN
       END
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      subroutine get_netmag(stam,nstm,dmag,smag)
+
+c     stam   - array of station magnitudes
+c     nstm   - number of station magnitudes observations
+c
+c     dmag   - mean network magnitude
+c     smag   - standard deviation of dmag
+c     
+
+      real*8  stam(1),dmag,smag
+      integer nstm
+
+      real*8  q2,fac
+      integer im
+
+      if(nstm.gt.1) then
+
+         fac = dble(nstm)
+
+         dmag = 0.d0
+      
+         do 100 im = 1,nstm
+           dmag = dmag + stam(im)
+100      continue
+
+         dmag = dmag/fac
+
+         smag = 0.d0
+
+         do 200 im =  1,nstm
+           smag = smag + q2(stam(im)-dmag)
+200      continue
+
+         smag = dsqrt(smag/fac)
+
+      else
+
+         dmag = stam(1)
+         smag = 0.d0
+
+      endif
+
+      return
+      end
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c
+      subroutine get_stat_mag(phid,amp,per,del,delk,zo,
+     +           mtyps,mtypml,mtypp,mlfile,dmag,smag,vlevel)
+
+      implicit real*8 (a-h,o-z)
+      implicit integer (i-n)
+
+      real*8    amp,per,del,delk,zo,dmag
+      character phid*8,smag*2,mlfile*512
+      character mtyps*6,mtypml*7,mtypp*3
+
+      character*512 magfile,file_check
+      real*4    rdel,rdelk,rmcorr,rzo
+      
+      integer   vlevel
+
+c   
+c     phid   - seismic phase name
+c     amp    - observed amplitude
+c     per    - observed signal period
+c     del    - epicentral disatnce in deg
+c     delk   - epicentral distance im km (real number)
+c     zo     - hypocentral depth
+c
+c     mtyps  - surface wave attenuation model
+c     mtypml - regional magnitude attenuation model
+c     mtypp  - body wave attenuation model
+
+c     
+c     dmag  - staion magnitue
+c     smag  - station magniude type
+c
+c     vlevel - verbosity level
+c
+
+c     the standard IASPEI (1967) formula:
+c     Ms = log (A / T )  + 1.66 log (DEL) + 0.3 (A in nanometer)
+c
+c     or the Rezapour/Pearce(BSSA 88, 43-61) formula (18):
+c
+c     Ms = log (A / T ) + 1/3 log (DEL) + 1/2 log (sin(DEL) +
+c          0.0046 DEL + 2.370  (A in nanometer)
+c
+
+      deg2rad = datan(1.d0) / 45.d0
+
+      dmag = -9.99d0
+      smag='  '
+
+      rdel = sngl(del)
+      rdelk = sngl(delk)
+      rzo  = sngl(zo)
+
+      if((phid.eq.'LR' .or. phid.eq.'M').and. per.ge.5.d0 ) then
+
+         d1 = del
+c
+c     to avoid problems with log(0.):
+c
+         if(d1.le.0.d0)   d1 =   0.001d0
+         if(d1.ge.180.d0) d1 = 179.999d0
+c
+         if(mtyps(1:6).eq.'IASPEI') then
+            dmag = dlog10(amp/per) + dlog10(d1)*1.66d0  + 0.3d0
+
+         else if(mtyps(1:3).eq.'R-P') then
+            dmag = dlog10(amp/per) + dlog10(d1)/3.d0 + 
+     +      dlog10(dsin(d1*deg2rad))/2.d0 + 0.0046d0*d1 + 2.370d0
+
+         else
+            print *,' Ms attenuation model not defined!'
+            go to 900
+
+         endif
+
+         if(dmag.lt.9.5d0 .and. dmag.gt.-9.9d0) then
+            smag ='MS'
+         else
+            dmag = -9.999d0
+         endif
+
+         go to 900
+
+      else if(phid.eq.'Lg'   .or.
+     +   (phid(1:1).eq.'S'.and.(phid(2:2).eq.'g'.or.
+     +     phid(2:2).eq.'b' .or.phid(2:2).eq.'n'.or.
+     +     phid(2:2).eq.' '))           .or.
+     +   ((phid(1:2).eq.'pS'.or.phid(1:2).eq.'sS').and.
+     +    (phid(3:3).eq.'g' .or.phid(3:3).eq.'b' .or.
+     +     phid(3:3).eq.'n' .or.phid(3:3).eq.' ') ) ) then
+c
+c        we will use ML attenuation file for all S-type onsets
+c
+
+         magfile = file_check(mlfile)
+         ierc = 0
+
+         if(magfile.ne.' ') then
+
+            if(mtypml(1:7).eq.'Richter'.and. per.le.0.d0) per = 1.d0
+
+            if(per.gt.0.d0) then
+               call epmagc(sngl(per),rdelk,rmcorr,vlevel,ierc,magfile)
+            else
+               ierc = 9
+            endif
+
+            if(ierc.eq.0) then
+
+               if(mtypml(1:5) .eq. 'Bath ') then
+                  dmag = dlog10(amp*0.1d0) + dble(rmcorr)
+
+               else if(mtypml(1:7) .eq. 'Richter') then
+                  dmag = dlog10(amp) + dble(rmcorr)
+
+               else
+                  if(vlevel . gt. 6 ) then
+                     print *,' Cannot find ML attenuation model ',mtypml
+                  endif
+                  go to 900
+               endif
+
+               if(dmag.lt.7.5d0 .and. dmag.gt.-9.9d0) then
+                  smag = 'ML'
+                  go to 900
+               else
+                  dmag = -9.999d0
+               endif
+
+            else
+
+               if(vlevel . gt. 6 ) then
+                  print *,' No ML attenuation corrections found!'
+               endif
+               go to 900
+
+            endif
+
+         endif
+
+      else if((phid(1:1).eq.'P' .or. phid(1:2).eq.'pP' .or.
+     +         phid(1:2).eq.'sP') .and. per.gt.0.d0 ) then
+
+         magfile = ' '
+
+         rmcorr = 0.
+
+         if(rdel.le.110. ) then
+
+            if(mtypp.eq.'G-R' .and. rdel.ge.11.) magfile = 'MB_G-R.DAT'
+
+            if(mtypp.eq.'V-C') magfile = 'MB_V-C.DAT'
+
+            if(mtypp.eq.'M-R' .and. (rdel.le.100. .and. rdel.ge.21.)) 
+     +         magfile = 'MB_M-R.DAT'
+
+         else if( rdel.gt.110 .and. rdel.le.150. .and.
+     +           (phid(1:3).eq.'PKP'  .or. phid(1:3).eq.'PKi'
+     +       .or. phid(1:4).eq.'pPKP' .or. phid(1:4).eq.'sPKP'
+     +       .or. phid(1:4).eq.'pPKi' .or. phid(1:4).eq.'sPKi')
+     +          .and. mtypp.eq.'V-C' ) then
+
+           magfile = 'MB_V-C.DAT'
+
+         else if( rdel.gt.150. .and.
+     +          (phid(1:5).eq.'PKPdf' .or. phid(1:6).eq.'pPKPdf'
+     +            .or. phid(1:6).eq.'sPKPdf') .and. mtypp.eq.'V-C') then
+
+           magfile = 'MB_V-C.DAT'
+
+         else
+
+           if(vlevel . gt. 6 ) then
+              print *,' No mb attenuation corrections defined for ',
+     +                phid, ' in ', rdel,' deg'
+           endif
+           go to 900
+            
+         endif
+
+         if(magfile.ne.' ') then
+
+            magfile = file_check(magfile)
+
+            ierc = 0
+            call magfact(magfile, rdel, rzo, rmcorr, ierc)
+
+            if(ierc.eq.0) then
+
+               dmag = dlog10(amp/per) + dble(rmcorr)
+
+               if(dmag.lt.8.5d0 .and. dmag.gt.-9.9d0) then
+                  smag = 'mb'
+               else
+                  dmag = -9.999d0
+               endif
+            else
+               if(vlevel . gt. 6 ) then
+                  print *,' No mb attenuation corrections found!'
+                  go to 900
+               endif
+            endif
+         else
+            if(vlevel . gt. 6 ) then
+               print *,' No mb attenuation-correction file!'
+            endif
+         endif
+
+         endif
+
+900      continue
+
+         return
+         end
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+       

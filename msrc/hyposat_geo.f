@@ -574,8 +574,13 @@ c
 c
 c     Earth geometry after Stacey (1992) 'Physics of the Earth'
 c
-      rada = 6378.136d0
-      radb = 6356.751d0
+c     rada = 6378.136d0
+c     radb = 6356.751d0
+c
+c    changed to WGS84 5 August 2025
+c
+      rada    = 6378.137d0
+      radb    = 6356.7523142d0
 
       radian = datan(1.d0) / 45.d0
 
@@ -719,8 +724,14 @@ c
 c
 c     Earth figure after Stacey (1992), Physcis of the Earth
 c
-        rada = 6378.136d0
-        radb = 6356.751d0
+c       rada = 6378.136d0
+c       radb = 6356.751d0
+c
+c    changed to WGS84 5 August 2025
+c
+        rada    = 6378.137d0
+        radb    = 6356.7523142d0
+
         eps = q2(radb/rada)
 
         elat = rlat*deg2rad

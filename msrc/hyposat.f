@@ -11,18 +11,18 @@ c
 c----------------------------------------------------------------------
 c
 c
-      program HYPOSAT_6_2
+      program HYPOSAT_6_2a
 
       implicit real*8 (a-h,o-z)
       implicit integer (i-n)
 
       character  version*25, VDATE*20, cprog*50
-      parameter (version='HYPOSAT Version 6.2      ' )
-c     parameter (vdate=' ( 20 June 2025)' )
+      parameter (version='HYPOSAT Version 6.2a     ' )
+c     parameter (vdate=' ( 14 August 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 20 June 2025
+c     last changes: 14 August 2025
 c
 c----------------------------------------------------------------------
 c
@@ -121,7 +121,7 @@ c
 
       character*5 sta(mstat),stat,stato,statw,stat1,stationfile*512,
      +          statcorfile*512,outputfile*512,inputfile*512,
-     +          magfile*512,magmlfile*512,outputisf*200,inputfilen*512,
+     +          magmlfile*512,outputisf*200,inputfilen*512,
      +          json_file*512,isf_file*512,statfile2*512
 c
 c     mread = maximum number of phases (hyposat-in file)
@@ -152,7 +152,7 @@ c
      +          ps(mread),period(mread),amplit(mread),dinv(mread,4),
      +          tt2(mread),ttu(mread),iev(mread),indx(mread),
      +          indx2(mrd2),idtu(mread),snr(mread),emeran(mread),
-     +          stamag(mread),istmag(mread),tt3(mrd2)
+     +          stamag(mread),istmag(mread),tt3(mrd2),smagn(mread)
 
       real*4    arr(mread),epiaz(mread),epiaz2(mread),dazgap,d1azi,
      +          d2azi,dazgap2,d1azi2,d2azi2
@@ -190,7 +190,7 @@ c
 
       character phcd1(mphas)*8,phcd2(mphas)*8,art*16, mtyp0*3
 
-      real*4 rzo,rdel,razi,rzo1,rzo2,rdel1,rmcorr, rdelk
+      real*4 rzo,rdel,razi,rzo1,rzo2,rdel1, rdelk
 
       logical first
       real*4  zso
@@ -243,7 +243,7 @@ c
 c     other variables
 c
       integer   yy,mon,dd,hh,idoy,ierr,typctl,mi,idum, isreg, regnum,
-     +          typctlm, y00, mon00, d00, h00, idetyp, ierc, json_rc
+     +          typctlm, y00, mon00, d00, h00, idetyp, json_rc
 
       character mm*4,name*48
       real*8    lat,lon,kmdel,dlati,dloni,ddepi, elevs, dazir, cpq, cpq2
@@ -295,8 +295,14 @@ c
 c
 c     Earth figure after Stacey (1992), Physcis of the Earth
 c
-      rada    = 6378.136d0
-      radb    = 6356.751d0
+c     rada    = 6378.136d0
+c     radb    = 6356.751d0
+c
+c    changed to WGS84 5 August 2025
+c
+      rada    = 6378.137d0
+      radb    = 6356.7523142d0
+
       rearth  = 6371.d0
 
       eps     = q2(radb/rada)
@@ -496,7 +502,7 @@ c
       stome0  = 120.d0
       wadmin  = 0.d0
       wadmax  = 300.d0
-      dismaxst = 21001.d0
+      dismaxst = 180.d0
       disminst = -1.d0
 
       iwl = 0
@@ -1876,6 +1882,11 @@ c
 
       if(typctl.ge.0) then
          print *,'PROGRAM ',trim(cprog)
+      endif
+
+      if(kmout) then
+        dismaxst = dismaxst * 111.5d0
+        disminst = disminst * 110.5d0
       endif
 
       if(isf_out) then
@@ -7168,15 +7179,15 @@ c
      +         f7.2,'' %'')') confl
 
          if(kmout) then
-            if(disminst.gt.0.d0 .and. dismaxst.ge.21000.d0) then
+            if(disminst.gt.0.d0 .and. dismaxst.ge.20100.d0) then
                write(11,'(/''Location for observations at distances '',
      +               ''larger than'',f8.1,'' [km]'')') disminst
             endif
-            if(disminst.le.0.d0 .and. dismaxst.lt.21000.d0) then
+            if(disminst.le.0.d0 .and. dismaxst.lt.20100.d0) then
                write(11,'(/''Location for observations at distances '',
-     +               ''smaller than'',f8.1,'' [km]'')') dismaxst
+     +               ''shorter than'',f8.1,'' [km]'')') dismaxst
             endif
-            if(disminst.gt.0.d0 .and. dismaxst.lt.21000.d0) then
+            if(disminst.gt.0.d0 .and. dismaxst.lt.20100.d0) then
                write(11,'(/''Location for observations at distances '',
      +               ''between'',f8.1,'' and'',f8.1,'' [km]'')') 
      +               disminst,dismaxst
@@ -7188,7 +7199,7 @@ c
             endif
             if(disminst.le.0.d0 .and. dismaxst.lt.180.d0) then
                write(11,'(/''Location for observations at distances '',
-     +               ''smaller than'',f6.1,'' [deg]'')') dismaxst
+     +               ''shorter than'',f6.1,'' [deg]'')') dismaxst
             endif
             if(disminst.gt.0.d0 .and. dismaxst.lt.180.d0) then
                write(11,'(/''Location for observations at distances '',
@@ -7533,8 +7544,8 @@ c
             llimdel = .true.
          endif
       else
-         if((delta .gt. dismaxst+10.d0) .or.
-     +      (delta .lt. disminst-10.d0) ) then
+         if((delta .gt. dismaxst+1.d0) .or.
+     +      (delta .lt. disminst-1.d0) ) then
             if(.not.ldist) go to 450
             llimdel = .true.
          endif
@@ -8406,205 +8417,69 @@ c    +         fac,emeran(i)
 
       text(i)(131:131) = onflag(i)(3:3)
 
-      istmag(i) = 0
+      istmag(i) = -9
+      stamag(i) = -10.d0
 
       if(amplit(i).gt.0.d0) then
 
-      namp = namp + 1
+         namp = namp + 1
 
-      if(magflag .and. touse(i)(6:6).eq.'M') then
+         if(magflag .and. touse(i)(6:6).eq.'M') then
 
-c
-c     the standard IASPEI (1967) formula:
-c     Ms = log (A / T )  + 1.66 log (DELTA) + 0.3 (A in nanometer)
-c
-c     or the Rezapour/Pearce(BSSA 88, 43-61) formula (18):
-c
-c     Ms = log (A / T ) + 1/3 log (DELTA) + 1/2 log (sin(DELA) +
-c          0.0046 DELTA + 2.370  (A in nanometer)
-cc
+            io = 0
 
-           dmag = -9.99d0
-           statmag='  '
+            call get_stat_mag(phid1,amplit(i),period(i),delta,
+     +        delk(iev(i)),zo,magtyps,magtypml,magtypp,magmlfile,dmag,
+     +        statmag,typctl)
 
-           if((phid1.eq.'LR' .or. phid1.eq.'M').and. 
-     +         period(i).ge.5.d0 ) then
+            if(statmag.eq. 'MS') then
 
-              d1 = delta
-c
-c     to avoid problems with log(0.):
-              if(d1.le.0.d0)   d1 =   0.001d0
-              if(d1.ge.180.d0) d1 = 179.999d0
-c
-              if(magtyps(1:6).eq.'IASPEI') then
-                dmag = dlog10(amplit(i)/period(i)) +
-     +              dlog10(d1)*1.66d0  + 0.3d0
-              else if(magtyps(1:3).eq.'R-P') then
-                dmag = dlog10(amplit(i)/period(i)) +
-     +              dlog10(d1)/3.d0 + dlog10(dsin(d1*deg2rad))/2.d0
-     +              + 0.0046d0*d1 + 2.370d0
-              else
-                print *,' Ms attenuation model not defined!'
-                go to 449
-              endif
+               if(delta.ge.delmsmin .and. delta.le.delmsmax) then
+                  imsm = imsm + 1
+                  if(dmag.gt.stams(iev(i))) stams(iev(i)) = dmag
+                  stamag(i) = dmag
+                  istmag(i) = 1
+                  io = 1
+               endif
+               go to 448
+            endif
 
-              if(dmag.lt.9.5d0 .and. dmag.gt.-9.9d0) then
-                 if(delta.ge.delmsmin .and. delta.le.delmsmax) then
-                    dmsm = dmsm + dmag
-                    imsm = imsm + 1
-                    if(dmag.gt.stams(iev(i))) stams(iev(i)) = dmag
-                    stamag(i) = dmag
-                    istmag(i) = 1
-                 endif
-                 statmag ='MS' 
-              else
-                 dmag = -9.999d0
-              endif
+            if(statmag.eq. 'ML') then
 
-           else if(dabs(ttres).lt.60.d0 .and. (phid1.eq.'Lg'   .or.
-     +             (phid1(1:1).eq.'S'.and.(phid1(2:2).eq.'g'.or.
-     +             phid1(2:2).eq.'b' .or.phid1(2:2).eq.'n'.or.
-     +             phid1(2:2).eq.' '))           .or.
-     +             ((phid1(1:2).eq.'pS'.or.phid1(1:2).eq.'sS').and.
-     +              (phid1(3:3).eq.'g' .or.phid1(3:3).eq.'b' .or.
-     +               phid1(3:3).eq.'n' .or.phid1(3:3).eq.' ') )) ) then
-c
-c             we will use ML attenuation file for S-type onsets
-c
+               if(dabs(tres).lt.60.d0 ) then
+                  if(delta.ge.delmlmin .and. delta.le.delmlmax) then
+                     imlm = imlm + 1
+                     if(dmag.gt.staml(iev(i))) staml(iev(i)) = dmag
+                     stamag(i) = dmag
+                     istmag(i) = 2
+                     io = 1
+                  endif
+               endif
+               go to 448
+            endif
 
-              magfile = file_check(magmlfile)
-              ierc = 0
+            if(statmag.eq. 'mb') then
 
-              if(magfile.ne.' ') then
+               if(ttres1.lt.9.d0 .and. dabs(ttres).le.8.d0 ) then
+                  if(delta.ge.delmbmin .and. delta.le.delmbmax ) then
+                     imbm = imbm + 1
+                     if(dmag.gt.stamb(iev(i))) stamb(iev(i)) = dmag
+                     stamag(i) = dmag
+                     istmag(i) = 3
+                     io = 1
+                  endif
+               endif
+            endif
 
-                 if((magtypml(1:7).eq.'Richter').and.
-     +               (period(i).le.0.d0)) period(i) = 1.d0
-
-                 if(period(i).gt.0.d0) then
-                    call epmagc(real(period(i)), rdelk, rmcorr, typctl, 
-     +                       ierc, magfile)
-                 else
-                    ierc = 9
-                 endif
-
-                 if(ierc.eq.0) then
-
-                    if(magtypml(1:5) .eq. 'Bath ') then
-                       dmag = dlog10(amplit(i)*0.1d0) + dble(rmcorr)
-                    else if(magtypml(1:7) .eq. 'Richter') then
-                       dmag = dlog10(amplit(i)) + dble(rmcorr)
-                    else
-                       if(typctl . gt. 6 ) then 
-                          print *,' Cannot find ML attenuation model '
-     +                           , magtypml
-                       endif
-                       go to 449
-                    endif
-
-                    if(dmag.lt.7.5d0 .and. dmag.gt.-9.9d0) then
-                       if(delta.ge.delmlmin .and. delta.le.delmlmax)then
-                          dmlm = dmlm + dmag
-                          imlm = imlm + 1
-                          if(dmag.gt.staml(iev(i))) staml(iev(i)) = dmag
-                          stamag(i) = dmag
-                          istmag(i) = 2
-                       endif
-                       statmag = 'ML'
-                    else
-                       dmag = -9.999d0
-                    endif
-
-                 else
-
-                    if(typctl . gt. 6 ) then
-                      print *,' No ML attenuation corrections found!'
-                    endif
-                    go to 449
-
-                 endif
-              else
-                 if(typctl . gt. 6 ) then 
-                    print *,' No ML attenuation model defined!'
-                 endif
-              endif
-
-           else if( ttres1.lt.9.d0 .and. dabs(ttres).le.8.d0 .and. 
-     +             (phid1(1:1).eq.'P' .or. phid1(1:2).eq.'pP' .or. 
-     +              phid1(1:2).eq.'sP') .and. period(i).gt.0.d0 ) then 
-
-              magfile = ' '
-
-              if(rdel.le.110. ) then
-
-                if(magtypp.eq.'G-R' .and. rdel.ge.11.) 
-     +                        magfile = 'MB_G-R.DAT'
-
-                if(magtypp.eq.'V-C') magfile = 'MB_V-C.DAT'
-
-                if(magtypp.eq.'M-R' .and. (rdel.le.100. 
-     +                        .and. rdel.ge.21.)) magfile = 'MB_M-R.DAT'
-
-              else if( rdel.gt.110 .and. rdel.le.150. .and. 
-     +                (phid1(1:3).eq.'PKP'  .or. phid1(1:3).eq.'PKi' 
-     +            .or. phid1(1:4).eq.'pPKP' .or. phid1(1:4).eq.'sPKP'
-     +            .or. phid1(1:4).eq.'pPKi' .or. phid1(1:4).eq.'sPKi')
-     +               .and. magtypp.eq.'V-C' ) then
-
-                magfile = 'MB_V-C.DAT'
-
-              else if( rdel.gt.150 .and. 
-     +               (phid1(1:5).eq.'PKPdf' .or. phid1(1:6).eq.'pPKPdf'
-     +                 .or. phid1(1:6).eq.'sPKPdf') 
-     +               .and. magtypp.eq.'V-C') then
-
-                magfile = 'MB_V-C.DAT'
-
-              endif
-
-              if(magfile.ne.' ') then
-
-                 magfile = file_check(magfile)
-                 ierc = 0
-                 call magfact(magfile, rdel, rzo, rmcorr, ierc)
-                 if(ierc.eq.0) then
-
-                    dmag = dlog10(amplit(i)/period(i)) + dble(rmcorr)
-
-                    if(dmag.lt.8.5d0 .and. dmag.gt.-9.9d0) then
-                       if(delta.ge.delmbmin .and. delta.le.delmbmax)then
-                          dmbm = dmbm + dmag
-                          imbm = imbm + 1
-                          if(dmag.gt.stamb(iev(i))) stamb(iev(i)) = dmag
-                          istmag(i) = 3
-                          stamag(i) = dmag
-                       endif
-                       statmag = 'mb'
-                    else
-                       dmag = -9.999d0
-                    endif
-
-                 else
-                    if(typctl . gt. 6 ) then 
-                       print *,' No mb attenuation corrections found!'
-                    endif
-                 endif
-
-              else
-                 if(typctl . gt. 6 ) then 
-                    print *,' No mb attenuation corrections file!'
-                 endif
-              endif
-
-           endif
-
-449        if(dmag.gt.-9.99d0) then
-              if(dmag.lt.0.d0) then
+448         if(dmag.gt.-9.99d0 .and. io.gt.0) then
+               if(dmag.lt.0.d0) then
                  write (text(i)(122:129),'(1x,f4.1,1x,a2)') dmag,statmag
-              else
+               else
                  write (text(i)(122:129),'(1x,f4.2,1x,a2)') dmag,statmag
-              endif
-           endif
-        endif
+               endif
+            endif
+
+         endif
       endif
 
       if(emerout .and. emeran(i).ge.0.d0) then
@@ -9109,63 +8984,69 @@ c       write(12,'(a)') cdum
       if(namp.gt.0 ) then
 
         if(imsm.gt.0) then
-           if(lmaxm) then
-              imsm = 0
-              dmsm = 0.d0
+           imsm = 0
+           dmsm = 0.d0
+           sdms = 0.d0
+           if(.not.lmaxm) then
               do 4511 im = 1,nstat
                  if(stams(im).gt.-9.9d0) then
                     imsm = imsm + 1
-                    dmsm = dmsm + stams(im)
+                    smagn(im) = stams(im)
                  endif
 4511          continue
+           else
+              do 4512 im = 1,nobs
+                 if(stamag(im).gt.-9.9d0 .and. istmag(im).eq.1) then
+                    imsm = imsm + 1
+                    smagn(imsm) = stamag(im)
+                 endif
+4512          continue
            endif
-           fac = dble(imsm)
-           dmsm = dmsm / fac
-           sdms = 0.d0
-           do 4512 im = 1,nobs
-             if(istmag(im).eq.1) sdms = sdms + q2(dabs(stamag(im)-dmsm))
-4512       continue
-           sdms = dsqrt(sdms/fac)
+           if(imsm.gt.0) call get_netmag(smagn,imsm,dmsm,sdms)
         endif
 
         if(imlm.gt.0) then
-           if(lmaxm) then
-              imlm = 0
-              dmlm = 0.d0
+           imlm = 0
+           dmlm = 0.d0
+           sdml = 0.d0
+           if(.not.lmaxm) then
               do 4513 im = 1,nstat
                  if(staml(im).gt.-9.9d0) then
                     imlm = imlm + 1
-                    dmlm = dmlm + staml(im)
+                    smagn(imlm) = staml(im)
                  endif
 4513          continue
+           else
+              do 4514 im = 1,nobs
+                 if(stamag(im).gt.-9.9d0 .and. istmag(im).eq.2) then
+                    imlm = imlm + 1
+                    smagn(imlm) = stamag(im)
+                 endif
+4514          continue
            endif
-           fac = dble(imlm)
-           dmlm = dmlm / fac
-           sdml = 0.d0
-           do 4514 im = 1,nobs
-             if(istmag(im).eq.2) sdml = sdml + q2(dabs(stamag(im)-dmlm))
-4514       continue
-           sdml = dsqrt(sdml/fac)
+           if(imlm.gt.0) call get_netmag(smagn,imlm,dmlm,sdml)
         endif
 
         if(imbm.gt.0) then
-           if(lmaxm) then
-              imbm = 0
-              dmbm = 0.d0
+           imbm = 0
+           dmbm = 0.d0
+           sdmb = 0.d0
+           if(.not.lmaxm) then
               do 4515 im = 1,nstat
                  if(stamb(im).gt.-9.9d0) then
                     imbm = imbm + 1
-                    dmbm = dmbm + stamb(im)
+                    smagn(imbm) = stamb(im)
                  endif
 4515          continue
+           else
+              do 4516 im = 1,nobs
+                 if(stamag(im).gt.-9.9d0 .and. istmag(im).eq.3) then
+                    imbm = imbm + 1
+                    smagn(imbm) = stamag(im)
+                 endif
+4516          continue
            endif
-           fac = dble(imbm)
-           dmbm = dmbm / fac
-           sdmb = 0.d0
-           do 4516 im = 1,nobs
-             if(istmag(im).eq.3) sdmb = sdmb + q2(dabs(stamag(im)-dmbm))
-4516       continue
-           sdmb = dsqrt(sdmb/fac)
+           if(imbm.gt.0) call get_netmag(smagn,imbm,dmbm,sdmb)
         endif
 
         if(output) then
@@ -9479,8 +9360,12 @@ c
 
          dtth  = tttr(j) - tttr(i)
          dtobs = tt(j) - tt(i)
-         dtres = dtobs - dtth
-
+         if(dtth.lt.0.d0) then
+            dtres = dtth - dtobs
+         else
+            dtres = dtobs - dtth
+         endif
+            
          sdmean  = sdmean  + dtres
          sdrmean = sdrmean + dabs(dtres)
          rmsdt   = rmsdt   + q2(dtres)
