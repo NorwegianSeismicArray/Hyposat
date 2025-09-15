@@ -6104,7 +6104,8 @@ c
               elatm = convlat(elatmg,1)
 
               phaseu(1) = phase(1)
-
+C Close origin group before jumping out
+              if(json_out) call json_end_group(json_rc)
               go to 100
 
            endif
