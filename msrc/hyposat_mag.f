@@ -1244,7 +1244,7 @@ c     dmag   - mean network magnitude
 c     smag   - standard deviation of dmag
 c     
 
-      real*8  stam(1),dmag,smag
+      real*8  stam(*),dmag,smag
       integer nstm
 
       real*8  q2,fac
