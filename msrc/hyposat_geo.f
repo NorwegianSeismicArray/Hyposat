@@ -919,7 +919,6 @@ c          print *,i,dmazi,daz,dsin(daz),cpq
               endif
 
            endif
-
 300      continue
 
          if(k.eq.j) then
@@ -939,7 +938,7 @@ c          print *,i,dmazi,daz,dsin(daz),cpq
             daz = dble(dmazi)*deg2rad
             cpq2 = cpq2 + daz - dsin(daz)
 
-c             print *,'2nd ',i,dmazi,daz,dsin(daz),cpq2
+c           print *,'2nd ',i,dmazi,daz,dsin(daz),cpq2
 350      continue
 
       else
@@ -948,12 +947,12 @@ c             print *,'2nd ',i,dmazi,daz,dsin(daz),cpq2
 
       endif
 
-      cpq  = 1.d0 - cpq/pi2 
-      cpq2 = 1.d0 - cpq2/pi2
+      if (cpq.gt.0.d0)  cpq  = 1.d0 - cpq/pi2 
+      if (cpq2.gt.0.d0) cpq2 = 1.d0 - cpq2/pi2
 c
 c     set to 0. in the case of numerical errors
 c
-      if(cpq.lt.0.d0) cpq = 0.d0
+      if(cpq.lt.0.d0)  cpq = 0.d0
       if(cpq2.lt.0.d0) cpq2 = 0.d0
 
       return

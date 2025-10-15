@@ -1206,7 +1206,9 @@ C     Find table-index L of delta closest to input distance:
       DD=10000.
       if(dist.gt.FDELT(nodelt)*1.05) go to 4000
 c JS 23 May 2024: also minimum distance added
-      if(dist.lt.FDELT(nodelt)*0.095) go to 4000
+c      if(dist.lt.FDELT(nodelt)*0.095) go to 4000
+c JS 13 Oct 2025: corrected
+      if(dist.lt.FDELT(1)*0.095) go to 4000
 
       DO 3200  I=1,NODELT
       DIF=ABS(DIST-FDELT(I))
