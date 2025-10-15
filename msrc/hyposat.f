@@ -11,18 +11,18 @@ c
 c----------------------------------------------------------------------
 c
 c
-      program HYPOSAT_6_2a
+      program HYPOSAT_6_2a1
 
       implicit real*8 (a-h,o-z)
       implicit integer (i-n)
 
       character  version*25, VDATE*20, cprog*50
-      parameter (version='HYPOSAT Version 6.2a     ' )
-c     parameter (vdate=' ( 14 August 2025)' )
+      parameter (version='HYPOSAT Version 6.2a1    ' )
+c     parameter (vdate=' ( 13 October 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 14 August 2025
+c     last changes: 13 October 2025
 c
 c----------------------------------------------------------------------
 c
@@ -6104,7 +6104,8 @@ c
               elatm = convlat(elatmg,1)
 
               phaseu(1) = phase(1)
-
+C Close origin group before jumping out
+              if(json_out) call json_end_group(json_rc)
               go to 100
 
            endif

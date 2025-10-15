@@ -115,7 +115,7 @@ endif()
 
 if (WIN32)
     message("\n-- Install Intel Fortran libraries...")
-    set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}\\cmake\\modules )
+    set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/modules )
     message(STATUS "CMAKE_MODULE_PATH= ${CMAKE_MODULE_PATH} ")
     find_package(IntelFortranRuntimeLibs24)
     message(STATUS "INTEL_FORTRAN_RUNTIME_LIBS=${INTEL_FORTRAN_RUNTIME_LIBS}")
