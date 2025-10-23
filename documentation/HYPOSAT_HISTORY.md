@@ -499,3 +499,8 @@ e-mail: johannes.schweitzer@norsar.no
 
 	For consisttancy reasons Earth figure changed from Stacey (1992) to WGS84.
         Magnitude and net-magnitude calculations moved in own subroutines.
+
+### Version 6.2a1 October 2025
+### Version 6.2a2 October 2025
+
+        Some bug fixes in magnitude calculations and JSON output.

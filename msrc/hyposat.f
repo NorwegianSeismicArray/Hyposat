@@ -11,18 +11,18 @@ c
 c----------------------------------------------------------------------
 c
 c
-      program HYPOSAT_6_2a1
+      program HYPOSAT_6_2a2
 
       implicit real*8 (a-h,o-z)
       implicit integer (i-n)
 
       character  version*25, VDATE*20, cprog*50
-      parameter (version='HYPOSAT Version 6.2a1    ' )
-c     parameter (vdate=' ( 13 October 2025)' )
+      parameter (version='HYPOSAT Version 6.2a2    ' )
+c     parameter (vdate=' ( 23 October 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 13 October 2025
+c     last changes: 23 October 2025
 c
 c----------------------------------------------------------------------
 c
