@@ -18,11 +18,11 @@ c
 
       character  version*25, VDATE*20, cprog*50
       parameter (version='HYPOSAT Version 6.2a2    ' )
-c     parameter (vdate=' ( 13 October 2025)' )
+c     parameter (vdate=' ( 23 October 2025)' )
       parameter (vdate=' ' )
 
 c
-c     last changes: 13 October 2025
+c     last changes: 23 October 2025
 c
 c----------------------------------------------------------------------
 c

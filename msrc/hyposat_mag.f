@@ -1081,7 +1081,7 @@ C     N-2007 Kjeller
 C
 C.    MODIFICATION
 C.     here changed for HYPOSAT February 2007, JS
-C.     further changers            May 2024, JS
+C.     further changes            May 2024, JS
 C.    CORRECTION
 C.======================================================================
  
@@ -1206,9 +1206,10 @@ C     Find table-index L of delta closest to input distance:
       DD=10000.
       if(dist.gt.FDELT(nodelt)*1.05) go to 4000
 c JS 23 May 2024: also minimum distance added
-c      if(dist.lt.FDELT(nodelt)*0.095) go to 4000
-c JS 13 Oct 2025: corrected
       if(dist.lt.FDELT(1)*0.095) go to 4000
+c JS 23 Oct 2025: typo corrected
+c     if(dist.lt.FDELT(1)*0.095) go to 4000
+      if(dist.lt.FDELT(1)*0.95) go to 4000
 
       DO 3200  I=1,NODELT
       DIF=ABS(DIST-FDELT(I))
